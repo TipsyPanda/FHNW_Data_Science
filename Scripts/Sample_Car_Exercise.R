@@ -53,5 +53,5 @@ corrplot(cor(my_cars), type = "upper", order = "hclust", tl.col = "black", tl.sr
 write.csv(my_cars,dataOut) 
 View(my_cars)
 
-#Test Karsten git commit und push
-View(my_cars$mpg)
+#Test Kira git commit und push
+View(my_cars$cyl)
