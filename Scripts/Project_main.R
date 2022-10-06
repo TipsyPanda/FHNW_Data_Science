@@ -15,8 +15,7 @@ library(tm)
 dataIn = "./Data/IN/Project/LCdata.csv"
 dataOut = "./Data/Out/Project/LCdata_out.csv"
 Lcdata_in <- read.csv(dataIn,header = TRUE, sep =';') 
-lcdata <- Lcdata_in
-attach(lcdata)
+lcdata <- data.frame(Lcdata_in)
 
 
 #Analyze Data
@@ -25,12 +24,13 @@ summary(lcdata)
 #plot(lcdata)
 
 #Clean Data
+
 source('./Scripts/DataCleaning/DataCleaning_C1-C10.R')
 source('./Scripts/DataCleaning/DataCleaning_C11-C20.R')
 source('./Scripts/DataCleaning/DataCleaning_C21-C30.R')
 
 
 #View/store results
-
+summary(lcdata)
 #write.csv(lcdata,dataOut) 
 View(lcdata)

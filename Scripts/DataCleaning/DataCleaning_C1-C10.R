@@ -1,6 +1,39 @@
-#C6.Term 
+print("DataCleaning_C1-C10")
+require("tm")
+all_stops <- c("months", "years", "year")
+
+#C6.Term
 f <- factor(lcdata$term)
 levels(f)
-require("tm")
-lcdata$term <- as.integer(removeWords(lcdata$term,"months"))
+lcdata$term <- as.integer(removeWords(lcdata$term, all_stops))
 
+#C9.Emp_title
+f <- factor(lcdata$emp_title)
+levels(f)
+
+###C10.Emp_lengt
+r <- summary(lcdata$emp_length, na.rm = TRUE)
+r
+f <- factor(lcdata$emp_length)
+levels(f)
+table(f)
+
+
+#handle <1 and +10
+lcdata$emp_length = case_when(
+  lcdata$emp_length == "< 1 year"  ~ '0',
+  lcdata$emp_length == "10+ years"  ~ '10',
+  TRUE ~ lcdata$emp_length
+)
+#Remove year/s and supress NA introduction warning
+lcdata$emp_length <-
+  suppressWarnings(as.integer(removeWords(lcdata$emp_length, all_stops)))
+
+#Handle NA cases by replacing NA with the mean value. Mean and Median are almost identical.
+r <- summary(lcdata$emp_length, na.rm = TRUE)
+r
+r <-
+  round(mean(as.integer(lcdata$emp_length), na.rm = TRUE), digits = 0)
+lcdata$emp_length <-
+  ifelse(is.na(lcdata$emp_length), r,
+         as.integer(lcdata$emp_length))
