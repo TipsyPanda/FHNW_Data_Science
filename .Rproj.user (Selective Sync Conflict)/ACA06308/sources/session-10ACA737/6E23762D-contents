@@ -9,8 +9,8 @@ library(fastDummies)
 library(here)
 
 #LOAD DATA
-dataIn = "./Data/IN/Cars/cgh_cars.csv"
-dataOut = "./Data/Out/Cars/my_cars.csv"
+dataIn = "./Data/IN/cgh_cars.csv"
+dataOut = "./Data/Out/my_cars.csv"
 cars_in <- read.csv(dataIn) 
 View(cars_in)
 my_cars <- cars_in
