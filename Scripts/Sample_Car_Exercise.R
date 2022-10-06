@@ -54,4 +54,4 @@ write.csv(my_cars,dataOut)
 View(my_cars)
 
 #Test Kira git commit und push
-View(my_cars$cyl)
+View(my_cars$mpg)
