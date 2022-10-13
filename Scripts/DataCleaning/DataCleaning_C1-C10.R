@@ -3,23 +3,28 @@ require("tm")
 all_stops <- c("months", "years", "year")
 
 ##C1.id
-#ID should be dropped 
+  #Karsten, Not reviewed
+  #ID should be dropped 
   lcdata <- subset( lcdata, select = -id)
   
 ##C2.member_id
-#member_id should be dropped
+  #Karsten, Not reviewed
+  #member_id should be dropped
   lcdata <- subset( lcdata, select = -member_id)
 
 ##C6.Term
+  #Unknown, Not reviewed
   f <- factor(lcdata$term)
   levels(f)
   lcdata$term <- as.integer(removeWords(lcdata$term, all_stops))
 
 ##C9.Emp_title
+  #Unknown, Not reviewed
   f <- factor(lcdata$emp_title)
   levels(f)
 
 ###C10.Emp_lengt
+  #Unknown, Not reviewed
   r <- summary(lcdata$emp_length, na.rm = TRUE)
   r
   f <- factor(lcdata$emp_length)

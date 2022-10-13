@@ -1,6 +1,7 @@
 print("DataCleaning_C11-C20")
 
 ##C.11 Home Ownership
+  #Unknown, Not reviewed
   #check values
   f <- factor(lcdata$home_ownership)
   levels(f)
@@ -15,12 +16,14 @@ print("DataCleaning_C11-C20")
   lcdata$home_ownership <- as.integer(ordered(lcdata$home_ownership, levels= c("OTHER", "RENT", "MORTGAGE", "OWN")))
 
 ##C.13 Verification Status
+  #Unknown, Not reviewed
   #check values
   f <- factor(lcdata$verification_status)
   levels(f)
   table(f)
   
 ##C.15 Loan Status
+  #Unknown, Not reviewed
   #check values
   f <- factor(lcdata$loan_status)
   levels(f)
