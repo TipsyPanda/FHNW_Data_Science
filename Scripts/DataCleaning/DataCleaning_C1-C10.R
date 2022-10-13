@@ -2,6 +2,14 @@ print("DataCleaning_C1-C10")
 require("tm")
 all_stops <- c("months", "years", "year")
 
+##C1.id
+#ID should be dropped 
+  lcdata <- subset( lcdata, select = -id)
+  
+##C2.member_id
+#member_id should be dropped
+  lcdata <- subset( lcdata, select = -member_id)
+
 ##C6.Term
   f <- factor(lcdata$term)
   levels(f)

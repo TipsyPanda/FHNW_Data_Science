@@ -42,3 +42,5 @@ source('./Scripts/DataCleaning/DataCleaning_C61-C72.R')
 summary(lcdata)
 #write.csv(lcdata,dataOut) 
 View(lcdata)
+
+
