@@ -17,6 +17,7 @@ library(tidyverse)
 dataIn = "./Data/IN/Project/LCdata.csv"
 dataOut = "./Data/Out/Project/LCdata_out.csv"
 Lcdata_in <- read.csv(dataIn,header = TRUE, sep =';') 
+View(Lcdata_in)
 lcdata <- data.frame(Lcdata_in)
 
 View(lcdata)

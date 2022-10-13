@@ -1,7 +1,11 @@
 print("DataCleaning_C21-C30")
 
+##C.21 zip_code
+#Yannick - not verified
+summary(lcdata$zip_code)
+lcdata$zip_code
 
-##C.23 earliest_cr_line
+##C.25 earliest_cr_line
 #Yannick - not verified
 
 #format as date (add first day of the month then convert to ISO)

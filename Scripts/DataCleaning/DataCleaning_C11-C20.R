@@ -17,11 +17,9 @@ print("DataCleaning_C11-C20")
 
 ##C.13 Verification Status
   #Yannick - not verified
-  #check values
-  f <- factor(lcdata$verification_status)
-  levels(f)
-  table(f)
-  
+  #factorize
+  lcdata$verification_status <- as.factor(lcdata$verification_status)
+
 ##C.14 issue_d
   #Yannick - not verified
   
