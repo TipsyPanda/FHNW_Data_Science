@@ -12,20 +12,20 @@ print("DataCleaning_C21-C30")
   #Yannick - not verified 
   lcdata$addr_state <-  as.factor(lcdata$addr_state)
 
-  #anzalyze relation between state and zip code area
-  p1 <-  ggplot(lcdata, aes(x=addr_state,y=zip_code_area))+ geom_point() + geom_jitter()
-  plot(p1)
-  p2 <- ggplot(lcdata, aes(x=zip_code_area)) + geom_point(color="black", fill="white")
-  grid.arrange(p1, p2, nrow = 1)
-  par(mfrow=c(1,1))
-  cor(lcdata$zip_code_area, lcdata$addr_state )
-  #calculate cramerV. 
-  install.packages("rcompanion")
-  library(rcompanion)
-  cramerV(lcdata$zip_code_area, lcdata$addr_state )
-  cramerV(lcdata$zip_code_region, lcdata$addr_state )
-  df <- data.frame(lcdata$zip_code_area, lcdata$addr_state)
-  plot(df)
+  #experimental :anzalyze relation between state and zip code area
+  # p1 <-  ggplot(lcdata, aes(x=addr_state,y=zip_code_area))+ geom_point() + geom_jitter()
+  # plot(p1)
+  # p2 <- ggplot(lcdata, aes(x=zip_code_area)) + geom_point(color="black", fill="white")
+  # grid.arrange(p1, p2, nrow = 1)
+  # par(mfrow=c(1,1))
+  # cor(lcdata$zip_code_area, lcdata$addr_state )
+  # #calculate cramerV. 
+  # install.packages("rcompanion")
+  # library(rcompanion)
+  # cramerV(lcdata$zip_code_area, lcdata$addr_state )
+  # cramerV(lcdata$zip_code_region, lcdata$addr_state )
+  # df <- data.frame(lcdata$zip_code_area, lcdata$addr_state)
+  # plot(df)
   
          
 ##C.25 earliest_cr_line
