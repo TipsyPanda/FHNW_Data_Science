@@ -20,7 +20,7 @@ dataOut = "./Data/Out/Project/LCdata_out.csv"
 Lcdata_in <- read.csv(dataIn,header = TRUE, sep =';') 
 lcdata <- data.frame(Lcdata_in)
 
-
+View(lcdata)
 #Analyze Data
 str(lcdata)
 summary(lcdata)
@@ -32,6 +32,10 @@ summary(lcdata)
 source('./Scripts/DataCleaning/DataCleaning_C1-C10.R')
 source('./Scripts/DataCleaning/DataCleaning_C11-C20.R')
 source('./Scripts/DataCleaning/DataCleaning_C21-C30.R')
+source('./Scripts/DataCleaning/DataCleaning_C31-C40.R')
+source('./Scripts/DataCleaning/DataCleaning_C41-C50.R')
+source('./Scripts/DataCleaning/DataCleaning_C51-C60.R')
+source('./Scripts/DataCleaning/DataCleaning_C61-C72.R')
 
 
 #View/store results
