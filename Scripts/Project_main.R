@@ -4,11 +4,14 @@
 #install.packages("here")
 # install.packages("fastDummies")
 # install.packages("tm")
+#install.packages("tidyverse")
+
 library(tidyr)
 library(corrplot) 
 library(fastDummies)
 library(here)
 library(tm)
+library(tidyverse)
 
 
 #LOAD DATA
@@ -19,6 +22,7 @@ lcdata <- data.frame(Lcdata_in)
 
 
 #Analyze Data
+str(lcdata)
 summary(lcdata)
 # create a scatterplot of all features in the dataset and inspect it
 #plot(lcdata)

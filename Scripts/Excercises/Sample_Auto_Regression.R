@@ -21,6 +21,8 @@ lm.fit <- lm(mpg~., data=Auto)
 # inspect the model
 summary(lm.fit)
 
+
+
 # activate the dplyr library to use the select function (first install if needed)
 library(dplyr)
 # fit a model by excluding the qualitative feature - name

@@ -41,3 +41,5 @@ vignettes/*.pdf
 Data/In/Project/
 
 Data/Out/Project/
+
+.Rproj.user (Selective Sync Conflict)/
