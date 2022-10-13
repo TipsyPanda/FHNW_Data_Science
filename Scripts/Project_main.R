@@ -5,6 +5,8 @@
 #install.packages("fastDummies")
 #install.packages("tm")
 #install.packages("tidyverse")
+#install.packages("ggplot2")
+#install.packages("dplyr")
 
 library(tidyr)
 library(corrplot) 
@@ -12,6 +14,9 @@ library(fastDummies)
 library(here)
 library(tm)
 library(tidyverse)
+library(ggplot2)  
+library(dplyr)
+
 
 #LOAD DATA
 dataIn = "./Data/IN/Project/LCdata.csv"

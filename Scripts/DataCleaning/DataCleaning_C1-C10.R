@@ -24,7 +24,7 @@ all_stops <- c("months", "years", "year")
   levels(f)
 
 ###C10.Emp_lengt
-  #Unknown, Not reviewed
+  #Yannick, Not reviewed
   r <- summary(lcdata$emp_length, na.rm = TRUE)
   r
   f <- factor(lcdata$emp_length)
