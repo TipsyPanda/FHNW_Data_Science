@@ -27,9 +27,17 @@ summary(fit1)
 
 fit5 <- lm(sales~TV,data=ads )
 summary(fit5)
-plot(lm.fit2, which=1)
+plot(fit5, which=1)
+
 
 confint(fit5)
   
 
-ml.fit1 = lm(data=ads,formula = sales~TV+radio+newspaper)
+lm.fit1 = lm(data=ads,formula = sales~TV+radio+newspaper)
+
+
+conf_interval = predict(fit5, data.frame(TV=c(100,150,200)), interval="confidence") 
+
+pred_interval = predict(fit5, data.frame(TV=c(100,150,200)), interval="prediction")
+
+
