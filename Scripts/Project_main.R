@@ -2,8 +2,8 @@
 #install.packages("tidyr")
 #install.packages("corrplot")
 #install.packages("here")
-# install.packages("fastDummies")
-# install.packages("tm")
+#install.packages("fastDummies")
+#install.packages("tm")
 #install.packages("tidyverse")
 
 library(tidyr)
@@ -12,7 +12,6 @@ library(fastDummies)
 library(here)
 library(tm)
 library(tidyverse)
-
 
 #LOAD DATA
 dataIn = "./Data/IN/Project/LCdata.csv"

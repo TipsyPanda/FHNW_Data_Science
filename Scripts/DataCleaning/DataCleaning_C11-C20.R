@@ -1,7 +1,7 @@
 print("DataCleaning_C11-C20")
 
 ##C.11 Home Ownership
-  #Unknown, Not reviewed
+  #Yannick - not verified
   #check values
   f <- factor(lcdata$home_ownership)
   levels(f)
@@ -16,14 +16,24 @@ print("DataCleaning_C11-C20")
   lcdata$home_ownership <- as.integer(ordered(lcdata$home_ownership, levels= c("OTHER", "RENT", "MORTGAGE", "OWN")))
 
 ##C.13 Verification Status
-  #Unknown, Not reviewed
+  #Yannick - not verified
   #check values
   f <- factor(lcdata$verification_status)
   levels(f)
   table(f)
   
+##C.14 issue_d
+  #Yannick - not verified
+  
+  #format as date (add first day of the month then convert to ISO)
+     lcdata$issue_d <- as.Date(paste0(lcdata$issue_d, "-01"), "%b-%Y-%d")
+  
+  #analyzing:
+    #summary(lcdata$issue_d) 
+    #hist(lcdata$issue_d,"months") #very left skewed
+
 ##C.15 Loan Status
-  #Unknown, Not reviewed
+  #Yannick - not verified
   #check values
   f <- factor(lcdata$loan_status)
   levels(f)
