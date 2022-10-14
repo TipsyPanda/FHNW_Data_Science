@@ -1,4 +1,16 @@
 print("DataCleaning_C1-C10")
+
+##	C.1	id
+##	C.2	member_id
+##	C.3	loan_amnt
+##	C.4	funded_amnt
+##	C.5	funded_amnt_inv
+##	C.6	term
+##	C.7	int_rate
+##	C.8	installment
+##	C.9	emp_title
+##	C.10	emp_length
+
 require("tm")
 all_stops <- c("months", "years", "year")
 
@@ -50,3 +62,5 @@ all_stops <- c("months", "years", "year")
   lcdata$emp_length <-
     ifelse(is.na(lcdata$emp_length), r,
            as.integer(lcdata$emp_length))
+  
+  

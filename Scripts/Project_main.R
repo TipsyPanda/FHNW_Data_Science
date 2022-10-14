@@ -7,7 +7,9 @@
 #install.packages("tidyverse")
 #install.packages("ggplot2")
 #install.packages("dplyr")
+#install.packages("rcompanion")
 
+library(rcompanion)
 library(tidyr)
 library(corrplot) 
 library(fastDummies)
@@ -33,7 +35,6 @@ summary(lcdata)
 #plot(lcdata)
 
 #Clean Data
-
 source('./Scripts/DataCleaning/DataCleaning_C1-C10.R')
 source('./Scripts/DataCleaning/DataCleaning_C11-C20.R')
 source('./Scripts/DataCleaning/DataCleaning_C21-C30.R')

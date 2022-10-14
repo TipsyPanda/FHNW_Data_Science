@@ -1,4 +1,14 @@
 print("DataCleaning_C11-C20")
+##	C.11	home_ownership
+##	C.12	annual_inc
+##	C.13	verification_status
+##	C.14	issue_d
+##	C.15	loan_status
+##	C.16	pymnt_plan
+##	C.17	url
+##	C.18	desc
+##	C.19	purpose
+##	C.20	title
 
 ##C.11 Home Ownership
   #Yannick - not verified
@@ -30,9 +40,37 @@ print("DataCleaning_C11-C20")
     #summary(lcdata$issue_d) 
     #hist(lcdata$issue_d,"months") #very left skewed
 
-##C.15 Loan Status
+##C.15 loan_status
   #Yannick - not verified
-  #check values
-  f <- factor(lcdata$loan_status)
-  levels(f)
-  table(f)
+     #factorize 
+     lcdata$loan_status <- as.factor(lcdata$loan_status)
+     summary(lcdata$loan_status)
+     
+##C.16	pymnt_plan
+     #Yannick - not verified
+     #factorize 
+     lcdata$pymnt_plan <- as.factor(lcdata$pymnt_plan)
+     summary(lcdata$pymnt_plan)
+     
+##C.17	url
+     #Yannick - not verified
+     #url should be dropped
+     lcdata <- subset( lcdata, select = -url)
+     
+##C.18	desc
+     #Yannick - not verified
+     #desc should be dropped
+     lcdata <- subset( lcdata, select = -desc)
+     
+##C.19	purpose
+     #Yannick - not verified
+     lcdata$purpose <- as.factor(lcdata$purpose)
+     summary(lcdata$purpose)
+
+     
+##C.20	title
+     #Yannick - not verified
+     #title should be dropped
+     lcdata <- subset( lcdata, select = -title)
+
+     
