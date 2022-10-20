@@ -32,8 +32,9 @@ all_stops <- c("months", "years", "year")
 
 ##C9.Emp_title
   #Unknown, Not reviewed
-  f <- factor(lcdata$emp_title)
-  levels(f)
+  #factorize 
+  lcdata$emp_title <- as.factor(lcdata$emp_title)
+  summary(lcdata$emp_title)
 
 ###C10.Emp_lengt
   #Yannick, Not reviewed
@@ -56,9 +57,7 @@ all_stops <- c("months", "years", "year")
   
   #Handle NA cases by replacing NA with the mean value. Mean and Median are almost identical.
   r <- summary(lcdata$emp_length, na.rm = TRUE)
-  r
-  r <-
-    round(mean(as.integer(lcdata$emp_length), na.rm = TRUE), digits = 0)
+  r <- round(mean(as.integer(lcdata$emp_length), na.rm = TRUE), digits = 0)
   lcdata$emp_length <-
     ifelse(is.na(lcdata$emp_length), r,
            as.integer(lcdata$emp_length))

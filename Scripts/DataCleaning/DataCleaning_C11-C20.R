@@ -24,6 +24,45 @@ print("DataCleaning_C11-C20")
     
   #put them in order with owning has highest value and other as lowest
   lcdata$home_ownership <- as.integer(ordered(lcdata$home_ownership, levels= c("OTHER", "RENT", "MORTGAGE", "OWN")))
+  
+##	C.12	annual_inc
+  #Overview
+  plot(lcdata$annual_inc)
+  hist(lcdata$annual_inc)
+  boxplot(lcdata$annual_inc)
+  summary(lcdata$annual_inc)
+
+  
+  #remove NA by replacing them with median income (only 4 so not analyzed in detail)
+  r <- round(median(as.integer(lcdata$annual_inc), na.rm = TRUE), digits = 0)
+  lcdata$annual_inc <-
+    ifelse(is.na(lcdata$annual_inc), r,
+           as.integer(lcdata$annual_inc))
+
+  #analyze distribution --> high amount of outliers with high incomes
+  plot(lcdata$annual_inc)
+  hist(lcdata$annual_inc)
+  boxplot(lcdata$annual_inc)
+  
+  #winsorize data to move outliers into a reasonable range instead of removing them to keep the high income segment
+  data <- lcdata$annual_inc
+  length(data)
+  data_no_outlier <- Winsorize(data, probs = c(0.05, 0.95))
+  
+  #verify result. 
+  boxplot(data_no_outlier)
+  hist(data_no_outlier)
+  
+  #normalize the data into 0-1
+  x <- data_no_outlier
+  data_no_outlier_norm = (x-min(x))/(max(x)-min(x))
+  hist(data_no_outlier_norm)
+  summary(data_no_outlier_norm)
+  
+  #save data back to main data set
+  lcdata$annual_inc <- data_no_outlier_norm
+  
+  
 
 ##C.13 Verification Status
   #Yannick - not verified

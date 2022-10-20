@@ -8,6 +8,7 @@
 #install.packages("ggplot2")
 #install.packages("dplyr")
 #install.packages("rcompanion")
+#install.packages("DescTools")
 
 library(rcompanion)
 library(tidyr)
@@ -18,6 +19,13 @@ library(tm)
 library(tidyverse)
 library(ggplot2)  
 library(dplyr)
+library(DescTools)
+
+par(mfrow=c(1,1)) # set plotting window to default
+
+# set printing preferences
+options(scipen=99) # penalty for displaying scientific notation
+options(digits=4) # suggested number of digits to display
 
 
 #LOAD DATA
