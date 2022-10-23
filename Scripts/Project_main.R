@@ -42,6 +42,8 @@ summary(lcdata)
 # create a scatterplot of all features in the dataset and inspect it
 #plot(lcdata)
 
+attach(lcdata)
+
 #Clean Data
 source('./Scripts/DataCleaning/DataCleaning_C1-C10.R')
 source('./Scripts/DataCleaning/DataCleaning_C11-C20.R')
@@ -56,5 +58,3 @@ source('./Scripts/DataCleaning/DataCleaning_C61-C72.R')
 summary(lcdata)
 #write.csv(lcdata,dataOut) 
 View(lcdata)
-
-
