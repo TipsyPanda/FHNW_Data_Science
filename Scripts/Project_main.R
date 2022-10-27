@@ -10,6 +10,7 @@
 #install.packages("rcompanion")
 #install.packages("DescTools")
 
+library(gridExtra)
 library(rcompanion)
 library(tidyr)
 library(corrplot) 
@@ -78,7 +79,14 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
 ##Reference Model
     # Start by using all the predictors in the dataset - backward selection
   hist(LCtrain$dti)
-  lm.fit <- lm(int_rate~ loan_amnt +  dti, data=LCtrain)
+  
+  lm.fit <- lm(int_rate~   term + annual_inc, data=LCtrain)
   # inspect the model
   summary(lm.fit)
+  confint(lm.fit)
   plot(lm.fit, which=1)
+  plot(lm.fit, which=2)
+  grid.arrange(p1, p2, nrow = 1)
+  par(mfrow=c(1,1))
+  mean(lm.fit$residuals^2)
+
