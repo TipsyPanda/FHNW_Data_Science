@@ -66,27 +66,57 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
   #Lcdata_clean <- data.frame(read.csv(dataOut,header = TRUE, sep =';'))
   Lcdata_clean <- lcdata
   # 75% of the sample size
-  smp_size <- floor(0.75 * nrow(Lcdata_clean))
+  smp_size <- floor(0.1 * nrow(Lcdata_clean))
   
   # set the seed to make your partition reproducible
   set.seed(123)
   lcdata_ind <- sample(seq_len(nrow(Lcdata_clean)), size = smp_size)
-  LCtrain <- Lcdata_clean[lcdata_ind, ]
-  LCtest <- Lcdata_clean[-lcdata_ind, ]
+  LCtrain <- as_tibble(Lcdata_clean[lcdata_ind, ])
+  LCtest <- as_tibble(Lcdata_clean[-lcdata_ind, ])
 
 
   
 ##Reference Model
     # Start by using all the predictors in the dataset - backward selection
   hist(LCtrain$dti)
+  # check correlation between the quantitative predictors
+  LCtrain.sub <- LCtrain %>% select(int_rate, term, loan_amnt,dti,annual_inc,emp_length)
+  p_mat <- cor(LCtrain.sub)
+ 
+  # run plot
+  corrplot(
+    p_mat,
+    title = "Dummy name here",
+    method = "circle",
+    type = "full",
+    tl.col = "black",
+    order = "hclust",
+    hclust.method = "ward.D2",
+    tl.cex = 1.2,
+    cl.cex=1.2,
+    outline = T,
+    mar=c(0,0,4,5),
+    sig.level = 0.05,
+  )
+  ggplot(LCtrain, aes(x=loan_amnt, y=int_rate)) + geom_point(aes(col="white"))
+
+  lm.fit0 <- lm(int_rate~  dti, data=LCtrain)  
+  summary(lm.fit0)
+  confint(lm.fit0)
+  plot(lm.fit0, which=1)
   
-  lm.fit <- lm(int_rate~   term + annual_inc, data=LCtrain)
-  # inspect the model
-  summary(lm.fit)
-  confint(lm.fit)
-  plot(lm.fit, which=1)
-  plot(lm.fit, which=2)
-  grid.arrange(p1, p2, nrow = 1)
-  par(mfrow=c(1,1))
+  
+  lm.fit1 <- lm(int_rate~  purpose +term + dti+loan_amnt + emp_length, data=LCtrain)
+  summary(lm.fit1)
+  confint(lm.fit1)
+  plot(lm.fit1, which=1)
+  plot(lm.fit1, which=2)
+
+
   mean(lm.fit$residuals^2)
+  
+ 
+  
+
+  
 
