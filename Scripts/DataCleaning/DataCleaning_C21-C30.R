@@ -39,7 +39,11 @@ print("DataCleaning_C21-C30")
   # df <- data.frame(lcdata$zip_code_area, lcdata$addr_state)
   # plot(df)
   
-         
+##C.25 dti
+  #Yannick - not verified
+  #remove outliers with dti over 100%
+  lcdata<-subset(lcdata, lcdata$dti < 100)
+             
 ##C.25 earliest_cr_line
   #Yannick - not verified
   

@@ -50,11 +50,35 @@ source('./Scripts/DataCleaning/DataCleaning_C11-C20.R')
 source('./Scripts/DataCleaning/DataCleaning_C21-C30.R')
 source('./Scripts/DataCleaning/DataCleaning_C31-C40.R')
 source('./Scripts/DataCleaning/DataCleaning_C41-C50.R')
-source('./Scripts/DataCleaning/DataCleaning_C51-C60.R')
-source('./Scripts/DataCleaning/DataCleaning_C61-C72.R')
+source('./Scripts/DataCleaning/DataCleaning_C51-C58.R')
+source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
 
 
-#View/store results
-summary(lcdata)
-#write.csv(lcdata,dataOut) 
-View(lcdata)
+##View/store results
+  summary(lcdata)
+  View(lcdata)
+ # write.table(lcdata, file = dataOut, sep = ";", col.names = NA,qmethod = "double")
+
+
+## Define training and test data
+  #Read clean file
+  #Lcdata_clean <- data.frame(read.csv(dataOut,header = TRUE, sep =';'))
+  Lcdata_clean <- lcdata
+  # 75% of the sample size
+  smp_size <- floor(0.75 * nrow(Lcdata_clean))
+  
+  # set the seed to make your partition reproducible
+  set.seed(123)
+  lcdata_ind <- sample(seq_len(nrow(Lcdata_clean)), size = smp_size)
+  LCtrain <- Lcdata_clean[lcdata_ind, ]
+  LCtest <- Lcdata_clean[-lcdata_ind, ]
+
+
+  
+##Reference Model
+    # Start by using all the predictors in the dataset - backward selection
+  hist(LCtrain$dti)
+  lm.fit <- lm(int_rate~ loan_amnt +  dti, data=LCtrain)
+  # inspect the model
+  summary(lm.fit)
+  plot(lm.fit, which=1)
