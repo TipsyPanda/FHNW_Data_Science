@@ -79,6 +79,7 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
 ##Reference Model
     # Start by using all the predictors in the dataset - backward selection
   hist(LCtrain$dti)
+  pairs(LCtrain$dti)
   # check correlation between the quantitative predictors
   LCtrain.sub <- LCtrain %>% select(int_rate, term, loan_amnt,dti,annual_inc,emp_length)
   p_mat <- cor(LCtrain.sub)
