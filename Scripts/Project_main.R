@@ -29,6 +29,7 @@ library(dplyr)
 library(DescTools)
 library(caret)
 library(leaps)
+library(MASS)
 
 par(mfrow=c(1,1)) # set plotting window to default
 
@@ -72,9 +73,10 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
 ## Define training and test data
   #Read clean file
   #Lcdata_clean <- data.frame(read.csv(dataOut,header = TRUE, sep =';'))
-  Lcdata_clean_subset  <- lcdata %>% select(int_rate, term, loan_amnt,dti,annual_inc,
-                                            emp_length,funded_amnt ,funded_amnt_inv,term ,installment,home_ownership)
-  # 75% of the sample size
+  Lcdata_clean_subset  <- lcdata %>% dplyr::select(int_rate, term, loan_amnt,dti,annual_inc,emp_length,funded_amnt ,funded_amnt_inv,term ,installment,home_ownership,purpose)
+
+
+   # 75% of the sample size
   smp_size <- floor(0.1 * nrow(Lcdata_clean_subset))
   
   # set the seed to make your partition reproducible
@@ -82,16 +84,15 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
   lcdata_ind <- sample(seq_len(nrow(Lcdata_clean_subset)), size = smp_size)
   LCtrain <- as_tibble(Lcdata_clean_subset[lcdata_ind, ])
   LCtest <- as_tibble(Lcdata_clean_subset[-lcdata_ind, ])
-
-
   
+
 ##Reference Model
     # Start by using all the predictors in the dataset - backward selection
 
   # check correlation between the quantitative predictors
 
-  pairs( LCtrain)
-  p_mat <- cor(LCtrain)
+  # pairs( LCtrain)
+  # p_mat <- cor(LCtrain)
  
   # run plot
   corrplot(
@@ -110,7 +111,7 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
   )
   
   
-  ggplot(LCtrain, aes(x=loan_amnt, y=int_rate)) + geom_point(aes(col="white"))
+  # ggplot(LCtrain, aes(x=loan_amnt, y=int_rate)) + geom_point(aes(col="white"))
 
 
   ### k fold ###
@@ -118,7 +119,7 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
   #specify the cross-validation method
   ctrl <- trainControl(method = "cv", number = 10)
   
-  ##Model 0
+  ##Model0
   
   #fit a regression model and use k-fold CV to evaluate performance
   lm.fit0 <- train(int_rate~  term + dti, data = LCtrain, method = "lm", trControl = ctrl)
@@ -131,7 +132,7 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
   
 
   
-   ## Model 1 - adding additonal parameters (manual selection)
+   ## Model1 - adding additonal parameters (manual selection)
   
   
   #fit a regression model and use k-fold CV to evaluate performance
@@ -142,7 +143,25 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
   summary(lm.fit1)
   
   #  RMSE  Rsquared  MAE  - improvement over Model 0
-  #3.799  0.246     3.068
+  #3.797  0.2466    3.066
+  
+  ## Take Model1 and Scale data
+  ##scale and preprocess training and test data
+  pre_proc_val <- preProcess(LCtrain, method = c("center", "scale"))  
+  LCtrain = predict(pre_proc_val, LCtrain)
+  LCtest = predict(pre_proc_val, LCtest)
+  summary(LCtrain)
+  
+  #fit a regression model and use k-fold CV to evaluate performance
+  lm.fit1 <- train(int_rate~ purpose + term + dti+loan_amnt + emp_length, data = LCtrain, method = "lm", trControl = ctrl)
+  
+  #view summary of k-fold CV               
+  print(lm.fit1)
+  summary(lm.fit1)
+  
+  ##already clear improvement on RMSE
+  # RMSE   Rsquared  MAE   
+  # 0.868  0.2465    0.7009
   
 
   
@@ -156,8 +175,8 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
   print(lm.fit2)
   summary(lm.fit2)
   
-  #  RMSE  Rsquared  MAE  - improvement over Modelo
-  #3.799  0.246     3.068
+  #  RMSE  Rsquared  MAE  - improvement over Model1
+  #  0.868  0.2466    0.7009
  
 
   
@@ -175,7 +194,7 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
   summary(LCtrain)
   
   ##Forward
-  library(MASS)
+
   fmod <- stepAIC(object = mod0, direction = "forward", 
                   scope = formula(mod_all), trace=FALSE)
   coef(fmod)
@@ -213,5 +232,5 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
                  method="lmStepAIC", direction="backward", trace=FALSE, trControl=set_train)
   coef(cvmod$finalModel)
   AIC(cvmod$finalModel)
-
+  
   
