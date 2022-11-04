@@ -9,6 +9,9 @@
 #install.packages("dplyr")
 #install.packages("rcompanion")
 #install.packages("DescTools")
+#install.packages("leaps")
+
+
 
 library(gridExtra)
 library(rcompanion)
@@ -21,6 +24,7 @@ library(tidyverse)
 library(ggplot2)  
 library(dplyr)
 library(DescTools)
+library(leaps)
 
 par(mfrow=c(1,1)) # set plotting window to default
 
@@ -81,7 +85,7 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
   hist(LCtrain$dti)
   pairs(LCtrain$dti)
   # check correlation between the quantitative predictors
-  LCtrain.sub <- LCtrain %>% select(int_rate, term, loan_amnt,dti,annual_inc,emp_length)
+  LCtrain.sub <- LCtrain %>% select(int_rate, term, loan_amnt,dti,annual_inc,emp_length,issue_d)
   p_mat <- cor(LCtrain.sub)
  
   # run plot
@@ -99,6 +103,8 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
     mar=c(0,0,4,5),
     sig.level = 0.05,
   )
+  
+  
   ggplot(LCtrain, aes(x=loan_amnt, y=int_rate)) + geom_point(aes(col="white"))
 
   lm.fit0 <- lm(int_rate~  dti, data=LCtrain)  
