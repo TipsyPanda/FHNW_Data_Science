@@ -429,3 +429,4 @@ coef(m_ridge, s=best_lambda) # compare with ridge
 
 # Again, we could do predictions (in the same way than with ridge.)
 # We ould prefer LASSO, because it not only decreases variance, but also does subset selection for us.
+
