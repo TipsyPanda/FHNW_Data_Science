@@ -70,6 +70,11 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
  # write.table(lcdata, file = dataOut, sep = ";", col.names = NA,qmethod = "double")
 
 
+  
+###RUN 1 WITH MANUALLY SELECTED ARGUMENTS ### 
+# at this point we manually selected some input parameters that looked promising at first: int_rate, term, loan_amnt,dti,annual_inc,emp_length,funded_amnt ,funded_amnt_inv,term ,installment,home_ownership,purpose
+# the rest of the dataset is not cleaned up yet. For Run two we will go thorugh de dataset again and decide which parameters to include.
+  
 ## Define training and test data
   #Read clean file
   #Lcdata_clean <- data.frame(read.csv(dataOut,header = TRUE, sep =';'))
@@ -77,7 +82,7 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
 
 
    # 75% of the sample size
-  smp_size <- floor(0.1 * nrow(Lcdata_clean_subset))
+  smp_size <- floor(0.75 * nrow(Lcdata_clean_subset))
   
   # set the seed to make your partition reproducible
   set.seed(123)
@@ -233,4 +238,36 @@ source('./Scripts/DataCleaning/DataCleaning_C59-C72.R')
   coef(cvmod$finalModel)
   AIC(cvmod$finalModel)
   
+
+###  Try Lasso
+  library("glmnet")
+  predictors.Train <- model.matrix(int_rate ~ ., LCtrain)[,-1] # prepare format for glmnet
+  predictors.Test <- model.matrix(int_rate ~ ., LCtest)[,-1] # prepare format for glmnet
+  outputs.Train <- LCtrain$int_rate  # prepare format for glmnet
+  m_LASSO <- glmnet(predictors.Train, outputs.Train, alpha = 1)
   
+  dim(coef(m_LASSO))
+  # We only 71 lines, because glmnet has a stop criterion, see help.
+  
+  m_LASSO  # We see that some of the coeffizients are set to zero
+  plot(m_LASSO, label=TRUE)
+  (cv_LASSO <- cv.glmnet(predictors.Train, outputs.Train, alpha = 1) )
+  plot(cv_LASSO)
+  (best_lambda_LASSO <- cv_LASSO$lambda.min) # best lamda is very small, but lambda.1se is considerably bigger
+  coef(m_LASSO, s=best_lambda_LASSO) # for small lambda almost all coefficients are included
+  coef(m_LASSO, s=cv_LASSO$lambda.1se) # We can try again with lambda.1se
+
+  
+  summary(LCtrain)
+  # Train lasso regression on training data
+  m_lasso.Train <- glmnet(predictors.Train, outputs.Train, alpha = 1) # do the fit
+  
+  # We can use the predict() function to make predictions with ridge regression
+  lasso.pred <- predict(m_lasso.Train, newx = predictors.Test, s = best_lambda_LASSO) # s specifies the lambda to use
+  
+  # Compute MSE and RMSE
+  (MSE_lasso <- mean((LCtest$int_rate-lasso.pred)^2))
+  (RMSE_lasse <-sqrt(MSE_lasso))
+  summary(m_lasso.Train)
+
+### END RUN 1 ###
