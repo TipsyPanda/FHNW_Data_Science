@@ -1,0 +1,78 @@
+---
+title: "Project Part 2"
+output: 
+  html_notebook: 
+    theme: cerulean
+    highlight: textmate
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+***
+
+This notebook contains the code samples found in Chapter 3, Section 5 of [Deep Learning with R](https://www.manning.com/books/deep-learning-with-r). Note that the original text features far more content, in particular further explanations and figures: in this notebook, you will only find source code and related comments.
+
+***
+
+
+## Data import
+
+
+```{r}
+library(here)
+library(tidyverse)
+library(ggplot2)  
+library(dplyr)
+
+#LOAD DATA
+setwd(getwd())
+dataIn = "./Data/In/Project/Dataset-part-2.csv"
+dataOut = "./Data/Out/Project/Dataset-part-2.csv"
+# does no twork for some reason: data_in <- read.csv(dataIn,header = TRUE, sep =',') 
+ data_in <- read.csv("C:/Users/yanni/Documents/FHNW_Data_Science/Data/In/Project/Dataset-part-2.csv",header = TRUE, sep =',') 
+View(data_in)
+data <- data.frame(data_in)
+summary(data)
+```
+##Cleanup
+```{r}
+data <- data %>%   select(-ID)
+cols <- c("CODE_GENDER", "FLAG_OWN_CAR", "FLAG_OWN_REALTY", "NAME_INCOME_TYPE", "NAME_EDUCATION_TYPE", "NAME_FAMILY_STATUS", "NAME_HOUSING_TYPE", "FLAG_MOBIL", "FLAG_WORK_PHONE", "FLAG_PHONE", "FLAG_EMAIL", "OCCUPATION_TYPE","status")
+cols
+data[cols] <- lapply(data[cols], factor)
+summary(data)
+```
+```{r}
+   # 75% of the sample size
+  smp_size <- floor(0.75 * nrow(data))
+  
+  # set the seed to make your partition reproducible
+  set.seed(123)
+  data_ind <- sample(seq_len(nrow(data)), size = smp_size)
+  train <- as_tibble(data[data_ind, ])
+  test <- as_tibble(data[-data_ind, ])
+```
+```{r}
+  ## Take Model1 and Scale data
+  ##scale and preprocess training and test data
+  library(caret)
+  pre_proc_val <- preProcess(train, method = c("center", "scale"))  
+  train = predict(pre_proc_val, train)
+  test = predict(pre_proc_val, test)
+  summary(train)
+```
+
+
+```{r, results='hide'}
+library(keras)
+
+
+```
+
+
+
+```{r}
+str(train_data[[1]])
+```
