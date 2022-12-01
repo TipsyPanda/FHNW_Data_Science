@@ -25,7 +25,9 @@ library(here)
 library(tidyverse)
 library(ggplot2)  
 library(dplyr)
-
+library(tensorflow)
+library(tfdatasets)
+library(keras)
 #LOAD DATA
 setwd(getwd())
 dataIn = "../Data/Dataset-part-2.csv"
@@ -51,6 +53,10 @@ summary(data)
   data_ind <- sample(seq_len(nrow(data)), size = smp_size)
   train <- as_tibble(data[data_ind, ])
   test <- as_tibble(data[-data_ind, ])
+
+
+  
+  
 ```
 ```{r}
   ## Take Model1 and Scale data
@@ -59,13 +65,32 @@ summary(data)
   pre_proc_val <- preProcess(train, method = c("center", "scale"))  
   train = predict(pre_proc_val, train)
   test = predict(pre_proc_val, test)
+  train <- tensor_slices_dataset(train)
+  test <- tensor_slices_dataset(test)
   summary(train)
+  
 ```
 
 
 ```{r, results='hide'}
 library(keras)
+#https://www.tensorflow.org/tutorials/structured_data/feature_columns
 
+# model = tf.keras.Sequential([
+#   feature_layer,
+#   layers.Dense(128, activation='relu'),
+#   layers.Dense(128, activation='relu'),
+#   layers.Dropout(.1),
+#   layers.Dense(1)
+# ])
+# 
+# model.compile(optimizer='adam',
+#               loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+#               metrics=['accuracy'])
+# 
+# model.fit(train_ds,
+#           validation_data=val_ds,
+#           epochs=10)
 
 ```
 
