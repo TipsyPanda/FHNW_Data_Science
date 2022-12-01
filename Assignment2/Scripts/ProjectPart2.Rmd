@@ -28,10 +28,8 @@ library(dplyr)
 
 #LOAD DATA
 setwd(getwd())
-dataIn = "./Data/In/Project/Dataset-part-2.csv"
-dataOut = "./Data/Out/Project/Dataset-part-2.csv"
-# does no twork for some reason: data_in <- read.csv(dataIn,header = TRUE, sep =',') 
- data_in <- read.csv("C:/Users/yanni/Documents/FHNW_Data_Science/Data/In/Project/Dataset-part-2.csv",header = TRUE, sep =',') 
+dataIn = "../Data/Dataset-part-2.csv"
+ data_in <- read.csv(dataIn,header = TRUE, sep =',') 
 View(data_in)
 data <- data.frame(data_in)
 summary(data)
