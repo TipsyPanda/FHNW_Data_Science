@@ -76,6 +76,10 @@ summary(data)
 library(keras)
 #https://www.tensorflow.org/tutorials/structured_data/feature_columns
 
+#center and scale --> min max
+#one hot encoding
+# Matrix and vector
+
 # model = tf.keras.Sequential([
 #   feature_layer,
 #   layers.Dense(128, activation='relu'),

@@ -7,7 +7,7 @@ date: "2022-11-16"
 ---
 ```{r}
 getwd()
-cleaning <- read.csv("LCdata.csv", row.names=NULL,sep = ";" )
+cleaning <- read.csv("../../Data/In/Project/LCdata.csv", row.names=NULL,sep = ";" )
 ?read.csv # question mark is for Help which means when you want to see what a code means or for example the parameters 
 summary(cleaning)
 
@@ -260,10 +260,6 @@ aes(x=dti_merged,y=int_rate)+geom_point()
 
 
 
-
-
-
-```
 ```{r}
 
 ggplot(data = cleaning, mapping = aes(open_il_24m))+geom_histogram()
@@ -272,6 +268,7 @@ ggplot(data = cleaning, mapping = aes(x=int_rate,y=open_il_6m))+geom_point()
 
 ggplot(data = cleaning %>% select(int_rate, open_il_24m) %>% unique(), mapping = aes(x=int_rate,y=open_il_24m))+geom_point() 
 
+saveRDS(cleaning, "cleanData.rds")
 
 ```
 
