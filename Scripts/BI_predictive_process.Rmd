@@ -26,8 +26,8 @@ require(xgboost)
 #Increase JVM memory size to 16 to support weka.
 options(java.parameters = "-Xmx16g")
 getwd()
-xgb_res <- readRDS("./DataCleaning/Cleandata.rds")
-lcdata <- data.frame(lcdata %>% dplyr::select(int_rate, term, loan_amnt,dti,annual_inc,emp_length,funded_amnt ,funded_amnt_inv,term ,installment,home_ownership,purpose))
+lcdata <- readRDS("./DataCleaning/Cleandata.rds")
+lcdata <- data.frame(lcdata %>% dplyr::select(int_rate, term, loan_amnt,dti_merged,emp_length,term ,installment,home_ownership,purpose, revol_util,revol_bal))
 
 ```
 
@@ -46,6 +46,7 @@ As a first step the class attribute "int_rate" is analyzed:
 ```{r}
 #Check Boxplot and histogram
 boxplot(lcdata$int_rate, main ="Boxplot with outliers")
+hist(lcdata$int_rate)
 summary(lcdata$int_rate)
 ```
 
@@ -65,7 +66,7 @@ We use the initial_split(), training() and testing() functions to split our data
 
 ```{r Partition data into training and test sets}
 set.seed(713)
-trainIndex <- initial_split(lcdata, prop = 0.8, strata = int_rate) #stratify the class attribute since it is right skewed.This bins the data into quartiles
+trainIndex <- initial_split(lcdata, prop = 0.5) #stratify the class attribute since it is right skewed.This bins the data into quartiles
 trainingSet <- training(trainIndex)
 testSet <- testing(trainIndex)
 ```
