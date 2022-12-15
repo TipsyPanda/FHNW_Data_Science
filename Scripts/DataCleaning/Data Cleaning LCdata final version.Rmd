@@ -1,0 +1,457 @@
+---
+title: "Data Cleaning LCdata"
+output:
+  pdf_document: default
+  html_document: default
+date: "2022-11-16"
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r}
+getwd()
+cleaning <- read.csv("../../Data/In/Project/LCdata.csv", row.names=NULL,sep = ";" )
+?read.csv # question mark is for Help which means when you want to see what a code means or for example the parameters 
+summary(cleaning)
+
+```
+
+remove NA's. Remove whole lines or replace them with a value. with the
+code which() and choosing the corect column, you can add TRUE so it will
+show you the row in that column where the NA is located. library(dplyr)
+#is the most usefull library, google it bitch!#calling the dplyr library
+by pressing alt+shift+m
+
+in the data cleaning, I choose to use dplyr library to select the row
+anual income I save in the data cleaning the following; by calling
+filter is.na i say delete me all the rows that have na data in anual
+income, because as seen in the sumary, it's only 4 rows and therefore
+legit. By calling select i delete whole colums. With the minus in front
+of the name of the colums I say R which column to delete. mutate() adds
+new variables and preserves existing ones. the new colums is called
+\_cat. Ifelse transforms months sice delinq into \_cat. With the if else
+function I look at the month since last delinwuency. There were 400k
+NA's and the values were a tring. So the first task is to group that
+data by inspecting it in a histogram. We saw there that the data goes up
+to 500 months. The grouping is more subjective with business knowledge.
+After the grouping done by ifelse, they have to be tuned into numbers
+via
+
+```{r}
+which(is.na(cleaning$annual_inc)== TRUE)
+
+library(dplyr)
+
+cleaning <- cleaning %>% 
+  filter(!(is.na(annual_inc))) %>% 
+    filter(!(is.na(delinq_2yrs)))%>% 
+      filter(!(is.na(revol_bal))) %>% 
+        filter(!(is.na(revol_util))) %>% 
+          filter(!(is.na(collections_12_mths_ex_med))) %>% 
+  
+select( -id, -member_id, -title, -emp_title, -loan_status, -funded_amnt, -funded_amnt_inv, -loan_status, -pymnt_plan, -url, -desc, -total_pymnt, -total_pymnt_inv, -recoveries, -total_rec_prncp, -total_rec_int, -total_rec_late_fee,-collection_recovery_fee, -last_pymnt_d, -last_pymnt_amnt, -next_pymnt_d, -last_credit_pull_d,) %>% 
+  
+  mutate(
+    mths_since_delinq_cat = ifelse(is.na(mths_since_last_delinq)== TRUE,"No_delinq", 
+                                ifelse(mths_since_last_delinq <= 12, "recent", 
+                                   ifelse(mths_since_last_delinq <= 36, "1_to_3_years",
+                                          ifelse(mths_since_last_delinq <= 60,     "3_to_5_years","more_than_5_years")))) 
+    
+  ) %>% select(-mths_since_last_delinq) 
+          
+cleaning$mths_since_delinq_cat <- as.factor(cleaning$mths_since_delinq_cat) 
+
+```
+
+So this now was the very basis. All the colums rows are deleted, the
+first NA's are cleaned and the mutation from a huge number of dataset
+into subsets as strings and then into numbers is done. This is the basis
+for the rest of the data cleaning. Starting with the NA's.
+delinq_2\_years has 21 NA's. It's worth's go from 0 to 39. The column
+tells us how many "bad entries" did someone have in a certain register.
+So the first question to ask here is, how to replace the NA's? Delete
+the entire row? Or delete the entire column? So most of the cases had no
+delinq within the last two years. So what's the impact on the interest
+of the few ones that had a delinq?
+
+revol_bal has only 2 NA's which means deleting the row! revol_util has
+429 NA's which is more but compared to the dataset of 800k entries
+vernachlässigbar collections_12_mths_ex_med has 101 NA's which is more
+but compared to the dataset of 800k entries vernachlässigbar
+
+#Summary of NA's
+
+Now to the cases that have more than 1k NA's which should not be
+deleted, are the following:
+
+mths_since_last_record 675165 The number of months since the last public
+record. mths_since_last_major_derog 599082 Months since most recent
+90-day or worse rating annual_inc_joint 798156 The combined
+self-reported annual income provided by the co-borrowers during
+registration\
+dti_joint 798158 A ratio calculated using the co-borrowers' total
+monthly payments on the total debt obligations, excluding mortgages and
+the requested LC loan, divided by the co-borrowers' combined
+self-reported monthly income tot_coll_amt 63251 Total collection amounts
+ever owed tot_cur_bal 63251 Total current balance of all accounts
+open_acc_6m 779500 Number of open trades in last 6 months open_il_6m
+779500 Number of currently active installment trades open_il_12m 779500
+Number of installment accounts opened in past 12 months open_il_24m
+779500 Number of installment accounts opened in past 24 months
+mths_since_rcnt_il 780005 Months since most recent installment accounts
+opened total_bal_il 779500 Total current balance of all installment
+accounts il_util 781982 Ratio of total current balance to high
+credit/credit limit on all install acct open_rv_12m 779500 Number of
+revolving trades opened in past 12 months open_rv_24m 779500\
+total_rev_hi_lim 63251 Total revolving high credit/credit limit
+max_bal_bc 779500 Maximum current balance owed on all revolving accounts
+all_util 779500 Balance to credit limit on all trades inq_fi 779500
+Number of personal finance inquiries total_cu_tl 779500 Number of
+finance trades inq_last_12m 779500 Number of credit inquiries in past 12
+months
+
+```{r}
+library(ggplot2)
+ggplot(data = cleaning, mapping = aes(x=mths_since_last_record))+geom_histogram()
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_record))+geom_point(alpha=0.2)
+```
+
+After plotting, no corelation could be detected. Therefore categorizing
+would be another try.
+
+#Cleaning of mths_since_last_record
+
+```{r}
+#cleaning aproach for mths_since_last_record: These NA's seem to never have had a record in a debt enforcement office which is good. So the number should be zero.
+
+
+cleaning <- cleaning %>% mutate(mths_since_last_record = ifelse(is.na(mths_since_last_record), 0, mths_since_last_record))
+
+cleaning <- cleaning %>%
+  mutate(mths_since_last_record_cat = ifelse(mths_since_last_record== 0,"No_record", 
+                                ifelse(mths_since_last_record <= 12, "recent", 
+                                   ifelse(mths_since_last_record <= 36, "1_to_3_years",
+                                          ifelse(mths_since_last_record <= 60,     "3_to_5_years","more_than_5_years")))))  %>% select(-mths_since_last_record)
+  
+cleaning$mths_since_last_record_cat <- as.factor(cleaning$mths_since_last_record_cat) 
+
+#Plotting again to see results
+
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_record_cat))+geom_point(alpha=0.2)
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_record_cat))+geom_boxplot()
+
+```
+
+The results seem very odd. There is only a small, insignificant change
+in the interest rate when someone never had an entry in a public
+register. It doesn't seem to matter, if you just had a record compared
+to when you had a bad entry more then 5 years ago. It even seems to be
+better if you just had something negative which we believe, is not taken
+into account by Lending Club or they are doing a bad job in underwriting
+which may explain that they are out of business.
+
+#Cleaning of mths_since_last_major_derog
+
+```{r}
+
+#Plotting uncleaned mths_since_last_major_derog
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_major_derog))+geom_point(alpha=0.2)
+
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_major_derog))+geom_boxplot()
+
+#Cleaning mths_since_last_major_derog
+cleaning <- cleaning %>% mutate(
+    mths_since_last_major_derog_cat = ifelse(is.na(mths_since_last_major_derog)== TRUE,"No_derog", 
+                                ifelse(mths_since_last_major_derog <= 12, "recent", 
+                                   ifelse(mths_since_last_major_derog <= 36, "1_to_3_years",
+                                          ifelse(mths_since_last_major_derog <= 60,     "3_to_5_years","more_than_5_years")))) 
+    
+  ) %>% select(-mths_since_last_major_derog)
+
+cleaning$mths_since_last_major_derog_cat <- as.factor(cleaning$mths_since_last_major_derog_cat) 
+
+#Plotting cleaned mths_since_last_major_derog
+
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_major_derog_cat))+geom_point(alpha=0.2)
+
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_major_derog_cat))+geom_boxplot()
+```
+
+Same results for derog like for last record.... the data seems again
+very odd and a picture of how bad they might have done their
+underwriting forms.
+
+#Cleaning of annual_inc_joint and dti_joint Before cleaning, this data
+only shows, if there is a joint income. Same applies for dti and
+dti_joint. Therefore dti and annual income should be merged. So if
+somebody has a joint application, then joint income and joint dti should
+be taken. If somebody has an individual application, the values from
+annual_inc and dti should be taken. This is the correct way to clean it
+because some entries have the value zero for annual inc but a higher
+value for the joint inc which means that only the second applicant has
+an income. Same for dti. annual_inc_joint annual_inc mutate(address =
+ifelse(address == '',work_address,address))
+
+```{r}
+
+#merging annual income
+cleaning <- cleaning %>% mutate(
+    annual_inc_merged = ifelse(is.na(annual_inc_joint)== TRUE, annual_inc,annual_inc_joint)) 
+
+cleaning <- cleaning %>% select(-annual_inc,-annual_inc_joint)
+
+
+#merging debt to income ratio
+cleaning <- cleaning %>% mutate(
+    dti_merged = ifelse(is.na(dti_joint)== TRUE, dti,dti_joint)) 
+
+cleaning <- cleaning %>% select(-dti,-dti_joint)
+
+```
+
+#Cleaning of tot_coll_amt #ask SRI how to clean this outlier
+
+```{r}
+#Plotting uncleaned tot_coll_amt
+
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=tot_coll_amt))+geom_point(alpha=0.2)
+
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=tot_coll_amt))+geom_boxplot()
+
+#Cleaning tot_coll_amt
+cleaning <- cleaning %>% mutate(
+    tot_coll_amt = ifelse(is.na(tot_coll_amt)== TRUE,0, tot_coll_amt))
+
+
+#Plotting cleaned tot_coll_amt
+
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=tot_coll_amt))+geom_point(alpha=0.2)
+
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=tot_coll_amt))+geom_boxplot()
+```
+
+#Cleaning of tot_cur_bal #Outliers here as well
+
+```{r}
+#Plotting uncleaned tot_cur_bal
+
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=tot_cur_bal))+geom_point(alpha=0.2)
+
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=tot_cur_bal))+geom_boxplot()
+
+#Cleaning tot_cur_bal
+cleaning <- cleaning %>% mutate(
+    tot_cur_bal = ifelse(is.na(tot_cur_bal)== TRUE,0, tot_cur_bal))
+
+
+#Plotting cleaned tot_cur_bal
+
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=tot_cur_bal))+geom_point(alpha=0.2)
+
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=tot_cur_bal))+geom_boxplot()
+
+```
+
+#Cleaning of open_acc_6m, open_il_6m, open_il_12m, open_il_24m
+#mths_since_rcnt_il, total_bal_il, il_util, open_rv_12m, open_rv_24m,
+total_rev_hi_lim, max_bal_bc, all_util, inq_fi, total_cu_tl,
+inq_last_12m
+
+```{r}
+
+cleaning <- cleaning %>%                                                mutate(
+    open_acc_6m = ifelse(is.na(open_acc_6m)== TRUE,0, open_acc_6m)) %>% mutate(
+    open_il_6m = ifelse(is.na(open_il_6m)== TRUE,0, open_il_6m))   %>% mutate(
+    open_il_12m = ifelse(is.na(open_il_12m)== TRUE,0, open_il_12m)) %>% mutate( 
+    open_il_24m = ifelse(is.na(open_il_24m)== TRUE,0, open_il_24m)) %>% mutate( 
+    mths_since_rcnt_il = ifelse(is.na(mths_since_rcnt_il)== TRUE,0, mths_since_rcnt_il)) %>% mutate( 
+    total_bal_il = ifelse(is.na(total_bal_il)== TRUE,0, total_bal_il)) %>% mutate( 
+    il_util = ifelse(is.na(il_util)== TRUE,0, il_util)) %>% mutate( 
+    open_rv_12m = ifelse(is.na(open_rv_12m)== TRUE,0, open_rv_12m)) %>% mutate( 
+    total_rev_hi_lim = ifelse(is.na(total_rev_hi_lim)== TRUE,0, total_rev_hi_lim)) %>% mutate( 
+    max_bal_bc = ifelse(is.na(max_bal_bc)== TRUE,0, max_bal_bc)) %>% mutate( 
+    all_util = ifelse(is.na(all_util)== TRUE,0, all_util)) %>% mutate( 
+    inq_fi = ifelse(is.na(inq_fi)== TRUE,0, inq_fi)) %>% mutate( 
+    total_cu_tl = ifelse(is.na(total_cu_tl)== TRUE,0, total_cu_tl)) %>% mutate( 
+    inq_last_12m = ifelse(is.na(inq_last_12m)== TRUE,0, inq_last_12m)) %>% mutate( 
+    open_rv_24m = ifelse(is.na(open_rv_24m)== TRUE,0, open_rv_24m)) 
+
+```
+
+#Changing the ones with characters to factors
+
+```{r}
+cleaning$verification_status <- as.factor(cleaning$verification_status)
+cleaning$verification_status_joint <- as.factor(cleaning$verification_status_joint)
+cleaning$application_type <- as.factor(cleaning$application_type)
+cleaning$initial_list_status <- as.factor(cleaning$initial_list_status)
+cleaning$term <- as.factor(cleaning$term)
+cleaning$purpose <- as.factor(cleaning$purpose)
+cleaning$emp_length <- as.factor(cleaning$emp_length)
+
+
+```
+
+By checking the summary again it's clear to see that there are only 460 (rows) joint applications. This number is too small compared to the total dataset of almost 800k rows. Also by joining the dti's the data that correlates to the interest is contained. Therefore we should just delete the columns verification_status_joint as well as application_type
+
+```{r}
+cleaning <- cleaning %>% select(-verification_status_joint, -application_type)
+
+```
+
+
+
+
+
+#Cleaning of emp_lenght
+
+```{r}
+library(dplyr)
+
+unique(cleaning$emp_length)
+cleaning %>% filter(emp_length=="n/a")
+temp<-cleaning %>% filter(emp_length=="n/a")
+hist(temp$annual_inc_merged,breaks = 100)
+hist(cleaning$annual_inc_merged,breaks = 100)
+temp2<-cleaning %>% filter(annual_inc_merged<100000)
+hist(temp2$annual_inc_merged,breaks = 100)
+
+
+
+
+```
+
+```{r}
+substr(cleaning$issue_d,5,8)
+unique(substr(cleaning$issue_d,5,8))
+
+cleaning <- cleaning %>% mutate( 
+    issue_d = substr(cleaning$issue_d,5,8))
+
+
+
+group1 <- c("2007","2008","2010","2015","2011")
+cleaning <- cleaning %>% mutate(
+    year_group = ifelse(issue_d %in% group1,"Group1", "Group2")) %>% select(-issue_d)
+
+ cleaning$year_group <- as.factor(cleaning$year_group) 
+
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=year_group))+geom_boxplot()
+
+ 
+```
+
+There is only policy code 1, therefore delete the column
+
+```{r}
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=policy_code))+geom_boxplot()
+cleaning <- cleaning %>% select(-policy_code)
+
+```
+
+Cleaning of home_ownership When plotting the data, there seem to be no
+correlation to interest rates ANY are 2, OTHER are 154 and NONE are 39.
+Only none seem to have a higher interest rate then the others but with
+39 cases this seems odd. Because None would mean they are homeless and
+we can not imagine giving loans to homeless people...
+
+Factorize home ownership column after that code when rerunning because
+otherwise it will retain the deleted rows.
+
+```{r}
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=home_ownership))+geom_boxplot()
+
+
+```
+
+```{r}
+cleaning <- cleaning %>% filter(home_ownership %in% c("MORTGAGE","OWN","RENT") )
+cleaning$home_ownership <- as.factor(cleaning$home_ownership)
+```
+
+Delete column zip code
+
+```{r}
+cleaning <- cleaning %>% select(-zip_code)
+
+```
+
+Merge column addr_state. A common way of referring to regions in the
+United States is grouping them into 5 regions according to their
+geographic position on the continent: the Northeast:PA, NY, NJ, CT, RI,
+MA, VT, NH, ME, DE, MD Southwest:AZ, CA, CO, NV, NM, UT Northwest: ID,
+MT, OR, WA, WI, AK Southeast:AL, FL, GA, KY, MS, SC, NC, TN, VA, WV
+Midwest:IL, IN, IA, KS, MI, MN, MO, NE, ND, OH, SD, WI,\
+South:AR, LA, OK, TX
+
+```{r}
+Northeast <- c("PA","NY","NJ","CT","RI","MA","VT","NH","ME","DE","MD")
+Southwest <- c("AZ","CA","CO","NV","NM","UT")
+Northwest <- c("ID","MT","OR","WA","WI","AK")
+Southeast <- c("AL","FL","GA","KY","MS","SC","NC","TN","VA","WV")
+Midwest <- c("IL","IN","IA","KS","MI","MN","MO","NE","ND","OH","SD","WI")
+South <- c("AR","LA","OK","TX")
+
+cleaning <- cleaning %>% mutate(
+    region = ifelse(addr_state %in% Northeast,"northeast", 
+              ifelse(addr_state %in% Southwest,"southwest",
+               ifelse(addr_state %in% Northwest,"northwest",
+                 ifelse(addr_state %in% Southeast,"southeast",
+                  ifelse(addr_state %in% Midwest,"midwest","south"))))))
+
+  cleaning <- cleaning %>% select(-addr_state)
+   cleaning$region <- as.factor(cleaning$region)
+```
+
+Last but not least just deleting earliest_cr_line because that
+information is already covered through colums like inquieries, employed
+since and so on.
+
+```{r}
+cleaning <- cleaning %>% select(-earliest_cr_line)
+```
+
+
+```{r}
+summary(cleaning)
+
+```
+
+
+
+```{r}
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=emp_length))+geom_boxplot()
+
+```
+
+First we thought about cleaning emp_length because it still has 236966 n/a's. But after plotting emp_lenght it's clear that it does not have an impact on the interest. Therefore we delete this column. 
+
+
+```{r}
+cleaning <- cleaning %>% select(-emp_length)
+```
+
+Checking if other in purpose is really just other or n/a. It is other! and the whole purpose is important for the interest, seen when plotting it. 
+
+```{r}
+ggplot(data = cleaning, mapping = aes(x=int_rate,y=purpose))+geom_boxplot()
+
+```
+
+
+
+```{r}
+saveRDS(cleaning, "../../Data/Out/cleanData.rds")
+```
+
+
+
+
+
+
+
+
+
+
+

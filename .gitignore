@@ -45,3 +45,7 @@ Data/Out/Project/
 .Rproj.user (Selective Sync Conflict)/
 
 .RDataTmp
+
+*.rds
+
+Data/Out/
