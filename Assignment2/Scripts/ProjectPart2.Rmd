@@ -16,6 +16,77 @@ This notebook contains the code samples found in Chapter 3, Section 5 of [Deep L
 
 ***
 
+# Data Exploration & Preparation 
+* Our goal in the second part of the assignment is to predict how good a (new) customer will pay 
+back their credit card depts. In the data set application data from current customers (the first 18 
+attributes) together with their status (last attribute; target) are given.  
+* The attributes from the applications are 
+
+Attribute Name | Explanation | Remarks
+------------- | ------------- | -------------
+ID | Client | number 
+CODE_GENDER | Gender | 
+FLAG_OWN_CAR | Is there a car | 
+FLAG_OWN_REALTY | Is there a property | 
+CNT_CHILDREN | Number of children | 
+AMT_INCOME_TOTAL | Annual income | 
+NAME_INCOME_TYPE | Income category | 
+NAME_EDUCATION_TYPE | Education level | 
+NAME_FAMILY_STATUS | Marital status | 
+NAME_HOUSING_TYPE | Way of living | 
+DAYS_BIRTH | Birthday | Count backwards from current day (0), -1 means yesterday 
+DAYS_EMPLOYED | Start date of employment | Count backwards from current day(0). If positive, it means the person unemployed. 
+FLAG_MOBIL | Is there a mobile phone | 
+FLAG_WORK_PHONE | Is there a work phone | 
+FLAG_PHONE | Is there a phone | 
+FLAG_EMAIL | Is there an email | 
+OCCUPATION_TYPE | Occupation | 
+CNT_FAM_MEMBERS | Family size | 
+
+* The last attribute status contains the “pay-back behavior”, i.e. when did that customer pay back 
+their depts: 
+  + 0: 1-29 days past due 
+  + 1: 30-59 days past due 
+  + 2: 60-89 days overdue 
+  + 3: 90-119 days overdue 
+  + 4: 120-149 days overdue 
+  + 5: Overdue or bad debts, write-offs for more than 150 days 
+  + C: paid off that month 
+  + X: No loan for the month 
+Please note: We are learning only the pay-back behavior. The decision, i.e. if we accept a customer or 
+not, is done in another process step – not here!  
+
+**Single-label, Multiclass classification in page 73 in [Deep Learning with R](https://www.manning.com/books/deep-learning-with-r)**
+
+***
+
+# Main task 
+* Design your network. Why did you use a feed-forward network, or a convolutional or recursive 
+network – and why not?  
+* Use k-fold validation (with k = 10) to find the best hyperparameters for your network. 
+* Use the average of the accuracy to evaluate the performance of your trained network. 
+* Find a “reasonable” good model. Argue why that model is reasonable. If you are not able to find a 
+reasonable good model, explain what you all did to find a good model and argue why you think 
+that’s not a good model.  
+* Save your trained neural network with save_model_hdf5. Also save your data sets you used 
+for training, testing and validation. 
+
+***
+
+# Some hints 
+* Data preprocessing is easier here; no feature engineering is needed. 
+* You may be able to reuse parts of the exercises we used in our examples during lectures. 
+* All in- and output values need to be floating numbers (or integers in exceptions) in the range of 
+[0,1]. 
+* Please note that a neural network expects a R matrix or vector, not data frames. Transform your 
+data (e.g. a data frame) into a matrix with data.matrix if needed.  
+* There are some models which show an accuracy higher than 90% (!) for training (and test) data – 
+after learning more than 1000 epochs. 
+
+***
+
+# Important notes
+* Spaces must be removed in between '```{r}' and '```', else an error with '<!-- rnb-source-end -->' will be produced
 
 ## Data import
 
@@ -23,27 +94,36 @@ This notebook contains the code samples found in Chapter 3, Section 5 of [Deep L
 ```{r}
 library(here)
 library(tidyverse)
-library(ggplot2)  
+library(ggplot2)
 library(dplyr)
 library(tensorflow)
 library(tfdatasets)
 library(keras)
+library(caret)
 #LOAD DATA
 setwd(getwd())
 dataIn = "../Data/Dataset-part-2.csv"
- data_in <- read.csv(dataIn,header = TRUE, sep =',') 
+data_in <- read.csv(dataIn,header = TRUE, sep =',')
 View(data_in)
 data <- data.frame(data_in)
 summary(data)
 ```
 ##Cleanup
 ```{r}
-data <- data %>%   select(-ID)
-cols <- c("CODE_GENDER", "FLAG_OWN_CAR", "FLAG_OWN_REALTY", "NAME_INCOME_TYPE", "NAME_EDUCATION_TYPE", "NAME_FAMILY_STATUS", "NAME_HOUSING_TYPE", "FLAG_MOBIL", "FLAG_WORK_PHONE", "FLAG_PHONE", "FLAG_EMAIL", "OCCUPATION_TYPE","status")
+data <- data %>% select(-ID)
+cols <- c("CODE_GENDER","FLAG_OWN_CAR","FLAG_OWN_REALTY","NAME_INCOME_TYPE","NAME_EDUCATION_TYPE", "NAME_FAMILY_STATUS", "NAME_HOUSING_TYPE","FLAG_MOBIL","FLAG_WORK_PHONE","FLAG_PHONE","FLAG_EMAIL", "OCCUPATION_TYPE","status")
 cols
-data[cols] <- lapply(data[cols], factor)
+data[cols] <- lapply(data[cols],factor)
+
+# One-Hot-Encoding for CODE_GENDER
+dmy <- dummyVars(" ~ CODE_GENDER", data = data)
+trsf <- data.frame(predict(dmy, newdata = data))
+data <- cbind(data, trsf)
+data <- data %>% select(-CODE_GENDER)
+
 summary(data)
 ```
+##K-Fold-Validation
 ```{r}
    # 75% of the sample size
   smp_size <- floor(0.75 * nrow(data))

@@ -1682,17 +1682,23 @@ overflow-y: auto;
 border: 1px solid #ddd;
 border-radius: 4px;
 }
-.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-content: "\e259";
+.tabset-dropdown > .nav-tabs > li.active:before {
+content: "";
 font-family: 'Glyphicons Halflings';
 display: inline-block;
 padding: 10px;
 border-right: 1px solid #ddd;
 }
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-content: "\e258";
-font-family: 'Glyphicons Halflings';
+content: "";
 border: none;
+}
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+content: "";
+font-family: 'Glyphicons Halflings';
+display: inline-block;
+padding: 10px;
+border-right: 1px solid #ddd;
 }
 .tabset-dropdown > .nav-tabs > li.active {
 display: block;
@@ -1761,22 +1767,204 @@ Learning with R</a>. Note that the original text features far more
 content, in particular further explanations and figures: in this
 notebook, you will only find source code and related comments.</p>
 <hr />
+<div id="data-exploration-preparation" class="section level1">
+<h1>Data Exploration &amp; Preparation</h1>
+<ul>
+<li>Our goal in the second part of the assignment is to predict how good
+a (new) customer will pay back their credit card depts. In the data set
+application data from current customers (the first 18 attributes)
+together with their status (last attribute; target) are given.<br />
+</li>
+<li>The attributes from the applications are</li>
+</ul>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Attribute Name</th>
+<th>Explanation</th>
+<th>Remarks</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ID</td>
+<td>Client</td>
+<td>number</td>
+</tr>
+<tr class="even">
+<td>CODE_GENDER</td>
+<td>Gender</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>FLAG_OWN_CAR</td>
+<td>Is there a car</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>FLAG_OWN_REALTY</td>
+<td>Is there a property</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>CNT_CHILDREN</td>
+<td>Number of children</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>AMT_INCOME_TOTAL</td>
+<td>Annual income</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>NAME_INCOME_TYPE</td>
+<td>Income category</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>NAME_EDUCATION_TYPE</td>
+<td>Education level</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>NAME_FAMILY_STATUS</td>
+<td>Marital status</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>NAME_HOUSING_TYPE</td>
+<td>Way of living</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>DAYS_BIRTH</td>
+<td>Birthday</td>
+<td>Count backwards from current day (0), -1 means yesterday</td>
+</tr>
+<tr class="even">
+<td>DAYS_EMPLOYED</td>
+<td>Start date of employment</td>
+<td>Count backwards from current day(0). If positive, it means the
+person unemployed.</td>
+</tr>
+<tr class="odd">
+<td>FLAG_MOBIL</td>
+<td>Is there a mobile phone</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>FLAG_WORK_PHONE</td>
+<td>Is there a work phone</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>FLAG_PHONE</td>
+<td>Is there a phone</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>FLAG_EMAIL</td>
+<td>Is there an email</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>OCCUPATION_TYPE</td>
+<td>Occupation</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>CNT_FAM_MEMBERS</td>
+<td>Family size</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>The last attribute status contains the “pay-back behavior”,
+i.e. when did that customer pay back their depts:
+<ul>
+<li>0: 1-29 days past due</li>
+<li>1: 30-59 days past due</li>
+<li>2: 60-89 days overdue</li>
+<li>3: 90-119 days overdue</li>
+<li>4: 120-149 days overdue</li>
+<li>5: Overdue or bad debts, write-offs for more than 150 days</li>
+<li>C: paid off that month</li>
+<li>X: No loan for the month Please note: We are learning only the
+pay-back behavior. The decision, i.e. if we accept a customer or not, is
+done in another process step – not here!</li>
+</ul></li>
+</ul>
+<p><strong>Single-label, Multiclass classification in page 73 in <a href="https://www.manning.com/books/deep-learning-with-r">Deep Learning
+with R</a></strong></p>
+<hr />
+</div>
+<div id="main-task" class="section level1">
+<h1>Main task</h1>
+<ul>
+<li>Design your network. Why did you use a feed-forward network, or a
+convolutional or recursive network – and why not?<br />
+</li>
+<li>Use k-fold validation (with k = 10) to find the best hyperparameters
+for your network.</li>
+<li>Use the average of the accuracy to evaluate the performance of your
+trained network.</li>
+<li>Find a “reasonable” good model. Argue why that model is reasonable.
+If you are not able to find a reasonable good model, explain what you
+all did to find a good model and argue why you think that’s not a good
+model.<br />
+</li>
+<li>Save your trained neural network with save_model_hdf5. Also save
+your data sets you used for training, testing and validation.</li>
+</ul>
+<hr />
+</div>
+<div id="some-hints" class="section level1">
+<h1>Some hints</h1>
+<ul>
+<li>Data preprocessing is easier here; no feature engineering is
+needed.</li>
+<li>You may be able to reuse parts of the exercises we used in our
+examples during lectures.</li>
+<li>All in- and output values need to be floating numbers (or integers
+in exceptions) in the range of [0,1].</li>
+<li>Please note that a neural network expects a R matrix or vector, not
+data frames. Transform your data (e.g. a data frame) into a matrix with
+data.matrix if needed.<br />
+</li>
+<li>There are some models which show an accuracy higher than 90% (!) for
+training (and test) data – after learning more than 1000 epochs.</li>
+</ul>
+<hr />
+</div>
+<div id="important-notes" class="section level1">
+<h1>Important notes</h1>
+<ul>
+<li>Spaces must be removed in between ‘<code>{r}&#39; and &#39;</code>’, else an
+error with ‘<!-- rnb-source-end -->’ will be produced</li>
+</ul>
 <div id="data-import" class="section level2">
 <h2>Data import</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShoZXJlKVxubGlicmFyeSh0aWR5dmVyc2UpXG5saWJyYXJ5KGdncGxvdDIpICBcbmxpYnJhcnkoZHBseXIpXG5saWJyYXJ5KHRlbnNvcmZsb3cpXG5saWJyYXJ5KHRmZGF0YXNldHMpXG5saWJyYXJ5KGtlcmFzKVxuI0xPQUQgREFUQVxuc2V0d2QoZ2V0d2QoKSlcbmRhdGFJbiA9IFwiLi4vRGF0YS9EYXRhc2V0LXBhcnQtMi5jc3ZcIlxuIGRhdGFfaW4gPC0gcmVhZC5jc3YoZGF0YUluLGhlYWRlciA9IFRSVUUsIHNlcCA9JywnKSBcblZpZXcoZGF0YV9pbilcbmRhdGEgPC0gZGF0YS5mcmFtZShkYXRhX2luKVxuc3VtbWFyeShkYXRhKVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShoZXJlKVxubGlicmFyeSh0aWR5dmVyc2UpXG5saWJyYXJ5KGdncGxvdDIpXG5saWJyYXJ5KGRwbHlyKVxubGlicmFyeSh0ZW5zb3JmbG93KVxubGlicmFyeSh0ZmRhdGFzZXRzKVxubGlicmFyeShrZXJhcylcbmxpYnJhcnkoY2FyZXQpXG4jTE9BRCBEQVRBXG5zZXR3ZChnZXR3ZCgpKVxuZGF0YUluID0gXCIuLi9EYXRhL0RhdGFzZXQtcGFydC0yLmNzdlwiXG5kYXRhX2luIDwtIHJlYWQuY3N2KGRhdGFJbixoZWFkZXIgPSBUUlVFLCBzZXAgPScsJylcblZpZXcoZGF0YV9pbilcbmRhdGEgPC0gZGF0YS5mcmFtZShkYXRhX2luKVxuc3VtbWFyeShkYXRhKVxuYGBgIn0= -->
 <pre class="r"><code>library(here)
 library(tidyverse)
-library(ggplot2)  
+library(ggplot2)
 library(dplyr)
 library(tensorflow)
 library(tfdatasets)
 library(keras)
+library(caret)
 #LOAD DATA
 setwd(getwd())
 dataIn = &quot;../Data/Dataset-part-2.csv&quot;
- data_in &lt;- read.csv(dataIn,header = TRUE, sep =&#39;,&#39;) 
+data_in &lt;- read.csv(dataIn,header = TRUE, sep =&#39;,&#39;)
 View(data_in)
 data &lt;- data.frame(data_in)
 summary(data)</code></pre>
@@ -1816,58 +2004,70 @@ summary(data)</code></pre>
 <p>##Cleanup</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YSA8LSBkYXRhICU+JSAgIHNlbGVjdCgtSUQpXG5jb2xzIDwtIGMoXCJDT0RFX0dFTkRFUlwiLCBcIkZMQUdfT1dOX0NBUlwiLCBcIkZMQUdfT1dOX1JFQUxUWVwiLCBcIk5BTUVfSU5DT01FX1RZUEVcIiwgXCJOQU1FX0VEVUNBVElPTl9UWVBFXCIsIFwiTkFNRV9GQU1JTFlfU1RBVFVTXCIsIFwiTkFNRV9IT1VTSU5HX1RZUEVcIiwgXCJGTEFHX01PQklMXCIsIFwiRkxBR19XT1JLX1BIT05FXCIsIFwiRkxBR19QSE9ORVwiLCBcIkZMQUdfRU1BSUxcIiwgXCJPQ0NVUEFUSU9OX1RZUEVcIixcInN0YXR1c1wiKVxuY29sc1xuYGBgIn0= -->
-<pre class="r"><code>data &lt;- data %&gt;%   select(-ID)
-cols &lt;- c(&quot;CODE_GENDER&quot;, &quot;FLAG_OWN_CAR&quot;, &quot;FLAG_OWN_REALTY&quot;, &quot;NAME_INCOME_TYPE&quot;, &quot;NAME_EDUCATION_TYPE&quot;, &quot;NAME_FAMILY_STATUS&quot;, &quot;NAME_HOUSING_TYPE&quot;, &quot;FLAG_MOBIL&quot;, &quot;FLAG_WORK_PHONE&quot;, &quot;FLAG_PHONE&quot;, &quot;FLAG_EMAIL&quot;, &quot;OCCUPATION_TYPE&quot;,&quot;status&quot;)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YSA8LSBkYXRhICU+JSBzZWxlY3QoLUlEKVxuY29scyA8LSBjKFwiQ09ERV9HRU5ERVJcIixcIkZMQUdfT1dOX0NBUlwiLFwiRkxBR19PV05fUkVBTFRZXCIsXCJOQU1FX0lOQ09NRV9UWVBFXCIsXCJOQU1FX0VEVUNBVElPTl9UWVBFXCIsIFwiTkFNRV9GQU1JTFlfU1RBVFVTXCIsIFwiTkFNRV9IT1VTSU5HX1RZUEVcIixcIkZMQUdfTU9CSUxcIixcIkZMQUdfV09SS19QSE9ORVwiLFwiRkxBR19QSE9ORVwiLFwiRkxBR19FTUFJTFwiLCBcIk9DQ1VQQVRJT05fVFlQRVwiLFwic3RhdHVzXCIpXG5jb2xzXG5gYGAifQ== -->
+<pre class="r"><code>data &lt;- data %&gt;% select(-ID)
+cols &lt;- c(&quot;CODE_GENDER&quot;,&quot;FLAG_OWN_CAR&quot;,&quot;FLAG_OWN_REALTY&quot;,&quot;NAME_INCOME_TYPE&quot;,&quot;NAME_EDUCATION_TYPE&quot;, &quot;NAME_FAMILY_STATUS&quot;, &quot;NAME_HOUSING_TYPE&quot;,&quot;FLAG_MOBIL&quot;,&quot;FLAG_WORK_PHONE&quot;,&quot;FLAG_PHONE&quot;,&quot;FLAG_EMAIL&quot;, &quot;OCCUPATION_TYPE&quot;,&quot;status&quot;)
 cols</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiIFsxXSBcIkNPREVfR0VOREVSXCIgICAgICAgICBcIkZMQUdfT1dOX0NBUlwiICAgICAgICBcIkZMQUdfT1dOX1JFQUxUWVwiICAgICBcIk5BTUVfSU5DT01FX1RZUEVcIiAgICBcIk5BTUVfRURVQ0FUSU9OX1RZUEVcIlxuIFs2XSBcIk5BTUVfRkFNSUxZX1NUQVRVU1wiICBcIk5BTUVfSE9VU0lOR19UWVBFXCIgICBcIkZMQUdfTU9CSUxcIiAgICAgICAgICBcIkZMQUdfV09SS19QSE9ORVwiICAgICBcIkZMQUdfUEhPTkVcIiAgICAgICAgIFxuWzExXSBcIkZMQUdfRU1BSUxcIiAgICAgICAgICBcIk9DQ1VQQVRJT05fVFlQRVwiICAgICBcInN0YXR1c1wiICAgICAgICAgICAgIFxuIn0= -->
-<pre><code> [1] &quot;CODE_GENDER&quot;         &quot;FLAG_OWN_CAR&quot;        &quot;FLAG_OWN_REALTY&quot;     &quot;NAME_INCOME_TYPE&quot;    &quot;NAME_EDUCATION_TYPE&quot;
- [6] &quot;NAME_FAMILY_STATUS&quot;  &quot;NAME_HOUSING_TYPE&quot;   &quot;FLAG_MOBIL&quot;          &quot;FLAG_WORK_PHONE&quot;     &quot;FLAG_PHONE&quot;         
-[11] &quot;FLAG_EMAIL&quot;          &quot;OCCUPATION_TYPE&quot;     &quot;status&quot;             </code></pre>
+<!-- rnb-output-begin eyJkYXRhIjoiIFsxXSBcIkNPREVfR0VOREVSXCIgICAgICAgICBcIkZMQUdfT1dOX0NBUlwiICAgICAgICBcIkZMQUdfT1dOX1JFQUxUWVwiICAgICBcIk5BTUVfSU5DT01FX1RZUEVcIiAgIFxuIFs1XSBcIk5BTUVfRURVQ0FUSU9OX1RZUEVcIiBcIk5BTUVfRkFNSUxZX1NUQVRVU1wiICBcIk5BTUVfSE9VU0lOR19UWVBFXCIgICBcIkZMQUdfTU9CSUxcIiAgICAgICAgIFxuIFs5XSBcIkZMQUdfV09SS19QSE9ORVwiICAgICBcIkZMQUdfUEhPTkVcIiAgICAgICAgICBcIkZMQUdfRU1BSUxcIiAgICAgICAgICBcIk9DQ1VQQVRJT05fVFlQRVwiICAgIFxuWzEzXSBcInN0YXR1c1wiICAgICAgICAgICAgIFxuIn0= -->
+<pre><code> [1] &quot;CODE_GENDER&quot;         &quot;FLAG_OWN_CAR&quot;        &quot;FLAG_OWN_REALTY&quot;     &quot;NAME_INCOME_TYPE&quot;   
+ [5] &quot;NAME_EDUCATION_TYPE&quot; &quot;NAME_FAMILY_STATUS&quot;  &quot;NAME_HOUSING_TYPE&quot;   &quot;FLAG_MOBIL&quot;         
+ [9] &quot;FLAG_WORK_PHONE&quot;     &quot;FLAG_PHONE&quot;          &quot;FLAG_EMAIL&quot;          &quot;OCCUPATION_TYPE&quot;    
+[13] &quot;status&quot;             </code></pre>
 <!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YVtjb2xzXSA8LSBsYXBwbHkoZGF0YVtjb2xzXSwgZmFjdG9yKVxuc3VtbWFyeShkYXRhKVxuYGBgIn0= -->
-<pre class="r"><code>data[cols] &lt;- lapply(data[cols], factor)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YVtjb2xzXSA8LSBsYXBwbHkoZGF0YVtjb2xzXSxmYWN0b3IpXG5cbiMgT25lLUhvdC1FbmNvZGluZyBmb3IgQ09ERV9HRU5ERVJcbmRteSA8LSBkdW1teVZhcnMoXCIgfiBDT0RFX0dFTkRFUlwiLCBkYXRhID0gZGF0YSlcbnRyc2YgPC0gZGF0YS5mcmFtZShwcmVkaWN0KGRteSwgbmV3ZGF0YSA9IGRhdGEpKVxuZGF0YSA8LSBjYmluZChkYXRhLCB0cnNmKVxuZGF0YSA8LSBkYXRhICU+JSBzZWxlY3QoLUNPREVfR0VOREVSKVxuXG5zdW1tYXJ5KGRhdGEpXG5gYGAifQ== -->
+<pre class="r"><code>data[cols] &lt;- lapply(data[cols],factor)
+
+# One-Hot-Encoding for CODE_GENDER
+dmy &lt;- dummyVars(&quot; ~ CODE_GENDER&quot;, data = data)
+trsf &lt;- data.frame(predict(dmy, newdata = data))
+data &lt;- cbind(data, trsf)
+data &lt;- data %&gt;% select(-CODE_GENDER)
+
 summary(data)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiIENPREVfR0VOREVSIEZMQUdfT1dOX0NBUiBGTEFHX09XTl9SRUFMVFkgIENOVF9DSElMRFJFTiAgICAgQU1UX0lOQ09NRV9UT1RBTCAgICAgICAgICAgICAgTkFNRV9JTkNPTUVfVFlQRVxuIEY6NDM5MjQgICAgIE46NDMxMDcgICAgICBOOjIxMDkwICAgICAgICAgTWluLiAgIDogMC4wMDAwICAgTWluLiAgIDogIDI2MTAwICAgQ29tbWVyY2lhbCBhc3NvY2lhdGU6MTU2NDAgIFxuIE06MjM2OTAgICAgIFk6MjQ1MDcgICAgICBZOjQ2NTI0ICAgICAgICAgMXN0IFF1LjogMC4wMDAwICAgMXN0IFF1LjogMTEyNTAwICAgUGVuc2lvbmVyICAgICAgICAgICA6MTE5ODIgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTWVkaWFuIDogMC4wMDAwICAgTWVkaWFuIDogMTU3NTAwICAgU3RhdGUgc2VydmFudCAgICAgICA6IDUwNDQgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTWVhbiAgIDogMC40MjA2ICAgTWVhbiAgIDogMTc4ODY3ICAgU3R1ZGVudCAgICAgICAgICAgICA6ICAgIDQgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgM3JkIFF1LjogMS4wMDAwICAgM3JkIFF1LjogMjI1MDAwICAgV29ya2luZyAgICAgICAgICAgICA6MzQ5NDQgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTWF4LiAgIDoxOS4wMDAwICAgTWF4LiAgIDo2NzUwMDAwICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuICAgICAgICAgICAgICAgICAgICBOQU1FX0VEVUNBVElPTl9UWVBFICAgICAgICAgICAgTkFNRV9GQU1JTFlfU1RBVFVTICAgICAgICAgICBOQU1FX0hPVVNJTkdfVFlQRSAgIERBWVNfQklSVEggICAgXG4gQWNhZGVtaWMgZGVncmVlICAgICAgICAgICAgICA6ICAgMzggICAgQ2l2aWwgbWFycmlhZ2UgICAgICA6IDYwMTYgICAgQ28tb3AgYXBhcnRtZW50ICAgIDogIDIyNyAgIE1pbi4gICA6LTI1MjAxICBcbiBIaWdoZXIgZWR1Y2F0aW9uICAgICAgICAgICAgIDoxNjg5MCAgICBNYXJyaWVkICAgICAgICAgICAgIDo0NDkwNiAgICBIb3VzZSAvIGFwYXJ0bWVudCAgOjYwMzA3ICAgMXN0IFF1LjotMTk0MzggIFxuIEluY29tcGxldGUgaGlnaGVyICAgICAgICAgICAgOiAyMzA2ICAgIFNlcGFyYXRlZCAgICAgICAgICAgOiA0MTI1ICAgIE11bmljaXBhbCBhcGFydG1lbnQ6IDIzMDMgICBNZWRpYW4gOi0xNTU5MiAgXG4gTG93ZXIgc2Vjb25kYXJ5ICAgICAgICAgICAgICA6ICA3MTYgICAgU2luZ2xlIC8gbm90IG1hcnJpZWQ6IDk1MjggICAgT2ZmaWNlIGFwYXJ0bWVudCAgIDogIDU4NyAgIE1lYW4gICA6LTE1OTE0ICBcbiBTZWNvbmRhcnkgLyBzZWNvbmRhcnkgc3BlY2lhbDo0NzY2NCAgICBXaWRvdyAgICAgICAgICAgICAgIDogMzAzOSAgICBSZW50ZWQgYXBhcnRtZW50ICAgOiAxMDIwICAgM3JkIFF1LjotMTIzNDcgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFdpdGggcGFyZW50cyAgICAgICA6IDMxNzAgICBNYXguICAgOiAtNzQ4OSAgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiBEQVlTX0VNUExPWUVEICAgIEZMQUdfTU9CSUwgRkxBR19XT1JLX1BIT05FIEZMQUdfUEhPTkUgRkxBR19FTUFJTCAgICBPQ0NVUEFUSU9OX1RZUEUgIENOVF9GQU1fTUVNQkVSUyBcbiBNaW4uICAgOi0xNzUzMSAgIDE6Njc2MTQgICAgMDo1MzkwNCAgICAgICAgIDA6NDkwNzEgICAgMDo2MDgxOSAgICBMYWJvcmVycyAgIDoxMjQyNSAgIE1pbi4gICA6IDEuMDAwICBcbiAxc3QgUXUuOiAtMjg4NiAgICAgICAgICAgICAgMToxMzcxMCAgICAgICAgIDE6MTg1NDMgICAgMTogNjc5NSAgICBTYWxlcyBzdGFmZjogNjg5OSAgIDFzdCBRdS46IDIuMDAwICBcbiBNZWRpYW4gOiAtMTMwNSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBDb3JlIHN0YWZmIDogNjA1OSAgIE1lZGlhbiA6IDIuMDAwICBcbiBNZWFuICAgOiA2MjAyMiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBNYW5hZ2VycyAgIDogNDk1MCAgIE1lYW4gICA6IDIuMTc0ICBcbiAzcmQgUXUuOiAgLTMyMSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBEcml2ZXJzICAgIDogNDQyNyAgIDNyZCBRdS46IDMuMDAwICBcbiBNYXguICAgOjM2NTI0MyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAoT3RoZXIpICAgIDoxMjE1NSAgIE1heC4gICA6MjAuMDAwICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBOQSdzICAgICAgIDoyMDY5OSAgICAgICAgICAgICAgICAgICBcbiAgICAgc3RhdHVzICAgICBcbiAwICAgICAgOjUyMTMzICBcbiAxICAgICAgOiA2NDkxICBcbiBYICAgICAgOiA1NzkwICBcbiBDICAgICAgOiAxODA1ICBcbiAyICAgICAgOiAgNzEyICBcbiA1ICAgICAgOiAgMzc0ICBcbiAoT3RoZXIpOiAgMzA5ICBcbiJ9 -->
-<pre><code> CODE_GENDER FLAG_OWN_CAR FLAG_OWN_REALTY  CNT_CHILDREN     AMT_INCOME_TOTAL              NAME_INCOME_TYPE
- F:43924     N:43107      N:21090         Min.   : 0.0000   Min.   :  26100   Commercial associate:15640  
- M:23690     Y:24507      Y:46524         1st Qu.: 0.0000   1st Qu.: 112500   Pensioner           :11982  
-                                          Median : 0.0000   Median : 157500   State servant       : 5044  
-                                          Mean   : 0.4206   Mean   : 178867   Student             :    4  
-                                          3rd Qu.: 1.0000   3rd Qu.: 225000   Working             :34944  
-                                          Max.   :19.0000   Max.   :6750000                               
-                                                                                                          
-                    NAME_EDUCATION_TYPE            NAME_FAMILY_STATUS           NAME_HOUSING_TYPE   DAYS_BIRTH    
- Academic degree              :   38    Civil marriage      : 6016    Co-op apartment    :  227   Min.   :-25201  
- Higher education             :16890    Married             :44906    House / apartment  :60307   1st Qu.:-19438  
- Incomplete higher            : 2306    Separated           : 4125    Municipal apartment: 2303   Median :-15592  
- Lower secondary              :  716    Single / not married: 9528    Office apartment   :  587   Mean   :-15914  
- Secondary / secondary special:47664    Widow               : 3039    Rented apartment   : 1020   3rd Qu.:-12347  
-                                                                      With parents       : 3170   Max.   : -7489  
-                                                                                                                  
- DAYS_EMPLOYED    FLAG_MOBIL FLAG_WORK_PHONE FLAG_PHONE FLAG_EMAIL    OCCUPATION_TYPE  CNT_FAM_MEMBERS 
- Min.   :-17531   1:67614    0:53904         0:49071    0:60819    Laborers   :12425   Min.   : 1.000  
- 1st Qu.: -2886              1:13710         1:18543    1: 6795    Sales staff: 6899   1st Qu.: 2.000  
- Median : -1305                                                    Core staff : 6059   Median : 2.000  
- Mean   : 62022                                                    Managers   : 4950   Mean   : 2.174  
- 3rd Qu.:  -321                                                    Drivers    : 4427   3rd Qu.: 3.000  
- Max.   :365243                                                    (Other)    :12155   Max.   :20.000  
-                                                                   NA&#39;s       :20699                   
-     status     
- 0      :52133  
- 1      : 6491  
- X      : 5790  
- C      : 1805  
- 2      :  712  
- 5      :  374  
- (Other):  309  </code></pre>
+<!-- rnb-output-begin eyJkYXRhIjoiIEZMQUdfT1dOX0NBUiBGTEFHX09XTl9SRUFMVFkgIENOVF9DSElMRFJFTiAgICAgQU1UX0lOQ09NRV9UT1RBTCAgICAgICAgICAgICAgTkFNRV9JTkNPTUVfVFlQRVxuIE46NDMxMDcgICAgICBOOjIxMDkwICAgICAgICAgTWluLiAgIDogMC4wMDAwICAgTWluLiAgIDogIDI2MTAwICAgQ29tbWVyY2lhbCBhc3NvY2lhdGU6MTU2NDAgIFxuIFk6MjQ1MDcgICAgICBZOjQ2NTI0ICAgICAgICAgMXN0IFF1LjogMC4wMDAwICAgMXN0IFF1LjogMTEyNTAwICAgUGVuc2lvbmVyICAgICAgICAgICA6MTE5ODIgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTWVkaWFuIDogMC4wMDAwICAgTWVkaWFuIDogMTU3NTAwICAgU3RhdGUgc2VydmFudCAgICAgICA6IDUwNDQgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTWVhbiAgIDogMC40MjA2ICAgTWVhbiAgIDogMTc4ODY3ICAgU3R1ZGVudCAgICAgICAgICAgICA6ICAgIDQgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgM3JkIFF1LjogMS4wMDAwICAgM3JkIFF1LjogMjI1MDAwICAgV29ya2luZyAgICAgICAgICAgICA6MzQ5NDQgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTWF4LiAgIDoxOS4wMDAwICAgTWF4LiAgIDo2NzUwMDAwICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuICAgICAgICAgICAgICAgICAgICBOQU1FX0VEVUNBVElPTl9UWVBFICAgICAgICAgICAgTkFNRV9GQU1JTFlfU1RBVFVTICAgICAgICAgICBOQU1FX0hPVVNJTkdfVFlQRVxuIEFjYWRlbWljIGRlZ3JlZSAgICAgICAgICAgICAgOiAgIDM4ICAgIENpdmlsIG1hcnJpYWdlICAgICAgOiA2MDE2ICAgIENvLW9wIGFwYXJ0bWVudCAgICA6ICAyMjcgIFxuIEhpZ2hlciBlZHVjYXRpb24gICAgICAgICAgICAgOjE2ODkwICAgIE1hcnJpZWQgICAgICAgICAgICAgOjQ0OTA2ICAgIEhvdXNlIC8gYXBhcnRtZW50ICA6NjAzMDcgIFxuIEluY29tcGxldGUgaGlnaGVyICAgICAgICAgICAgOiAyMzA2ICAgIFNlcGFyYXRlZCAgICAgICAgICAgOiA0MTI1ICAgIE11bmljaXBhbCBhcGFydG1lbnQ6IDIzMDMgIFxuIExvd2VyIHNlY29uZGFyeSAgICAgICAgICAgICAgOiAgNzE2ICAgIFNpbmdsZSAvIG5vdCBtYXJyaWVkOiA5NTI4ICAgIE9mZmljZSBhcGFydG1lbnQgICA6ICA1ODcgIFxuIFNlY29uZGFyeSAvIHNlY29uZGFyeSBzcGVjaWFsOjQ3NjY0ICAgIFdpZG93ICAgICAgICAgICAgICAgOiAzMDM5ICAgIFJlbnRlZCBhcGFydG1lbnQgICA6IDEwMjAgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFdpdGggcGFyZW50cyAgICAgICA6IDMxNzAgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuICAgREFZU19CSVJUSCAgICAgREFZU19FTVBMT1lFRCAgICBGTEFHX01PQklMIEZMQUdfV09SS19QSE9ORSBGTEFHX1BIT05FIEZMQUdfRU1BSUwgICAgT0NDVVBBVElPTl9UWVBFIFxuIE1pbi4gICA6LTI1MjAxICAgTWluLiAgIDotMTc1MzEgICAxOjY3NjE0ICAgIDA6NTM5MDQgICAgICAgICAwOjQ5MDcxICAgIDA6NjA4MTkgICAgTGFib3JlcnMgICA6MTI0MjUgIFxuIDFzdCBRdS46LTE5NDM4ICAgMXN0IFF1LjogLTI4ODYgICAgICAgICAgICAgIDE6MTM3MTAgICAgICAgICAxOjE4NTQzICAgIDE6IDY3OTUgICAgU2FsZXMgc3RhZmY6IDY4OTkgIFxuIE1lZGlhbiA6LTE1NTkyICAgTWVkaWFuIDogLTEzMDUgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgQ29yZSBzdGFmZiA6IDYwNTkgIFxuIE1lYW4gICA6LTE1OTE0ICAgTWVhbiAgIDogNjIwMjIgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTWFuYWdlcnMgICA6IDQ5NTAgIFxuIDNyZCBRdS46LTEyMzQ3ICAgM3JkIFF1LjogIC0zMjEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgRHJpdmVycyAgICA6IDQ0MjcgIFxuIE1heC4gICA6IC03NDg5ICAgTWF4LiAgIDozNjUyNDMgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKE90aGVyKSAgICA6MTIxNTUgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTkEncyAgICAgICA6MjA2OTkgIFxuIENOVF9GQU1fTUVNQkVSUyAgICAgIHN0YXR1cyAgICAgIENPREVfR0VOREVSLkYgICAgQ09ERV9HRU5ERVIuTSAgIFxuIE1pbi4gICA6IDEuMDAwICAgMCAgICAgIDo1MjEzMyAgIE1pbi4gICA6MC4wMDAwICAgTWluLiAgIDowLjAwMDAgIFxuIDFzdCBRdS46IDIuMDAwICAgMSAgICAgIDogNjQ5MSAgIDFzdCBRdS46MC4wMDAwICAgMXN0IFF1LjowLjAwMDAgIFxuIE1lZGlhbiA6IDIuMDAwICAgWCAgICAgIDogNTc5MCAgIE1lZGlhbiA6MS4wMDAwICAgTWVkaWFuIDowLjAwMDAgIFxuIE1lYW4gICA6IDIuMTc0ICAgQyAgICAgIDogMTgwNSAgIE1lYW4gICA6MC42NDk2ICAgTWVhbiAgIDowLjM1MDQgIFxuIDNyZCBRdS46IDMuMDAwICAgMiAgICAgIDogIDcxMiAgIDNyZCBRdS46MS4wMDAwICAgM3JkIFF1LjoxLjAwMDAgIFxuIE1heC4gICA6MjAuMDAwICAgNSAgICAgIDogIDM3NCAgIE1heC4gICA6MS4wMDAwICAgTWF4LiAgIDoxLjAwMDAgIFxuICAgICAgICAgICAgICAgICAgKE90aGVyKTogIDMwOSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuIn0= -->
+<pre><code> FLAG_OWN_CAR FLAG_OWN_REALTY  CNT_CHILDREN     AMT_INCOME_TOTAL              NAME_INCOME_TYPE
+ N:43107      N:21090         Min.   : 0.0000   Min.   :  26100   Commercial associate:15640  
+ Y:24507      Y:46524         1st Qu.: 0.0000   1st Qu.: 112500   Pensioner           :11982  
+                              Median : 0.0000   Median : 157500   State servant       : 5044  
+                              Mean   : 0.4206   Mean   : 178867   Student             :    4  
+                              3rd Qu.: 1.0000   3rd Qu.: 225000   Working             :34944  
+                              Max.   :19.0000   Max.   :6750000                               
+                                                                                              
+                    NAME_EDUCATION_TYPE            NAME_FAMILY_STATUS           NAME_HOUSING_TYPE
+ Academic degree              :   38    Civil marriage      : 6016    Co-op apartment    :  227  
+ Higher education             :16890    Married             :44906    House / apartment  :60307  
+ Incomplete higher            : 2306    Separated           : 4125    Municipal apartment: 2303  
+ Lower secondary              :  716    Single / not married: 9528    Office apartment   :  587  
+ Secondary / secondary special:47664    Widow               : 3039    Rented apartment   : 1020  
+                                                                      With parents       : 3170  
+                                                                                                 
+   DAYS_BIRTH     DAYS_EMPLOYED    FLAG_MOBIL FLAG_WORK_PHONE FLAG_PHONE FLAG_EMAIL    OCCUPATION_TYPE 
+ Min.   :-25201   Min.   :-17531   1:67614    0:53904         0:49071    0:60819    Laborers   :12425  
+ 1st Qu.:-19438   1st Qu.: -2886              1:13710         1:18543    1: 6795    Sales staff: 6899  
+ Median :-15592   Median : -1305                                                    Core staff : 6059  
+ Mean   :-15914   Mean   : 62022                                                    Managers   : 4950  
+ 3rd Qu.:-12347   3rd Qu.:  -321                                                    Drivers    : 4427  
+ Max.   : -7489   Max.   :365243                                                    (Other)    :12155  
+                                                                                    NA&#39;s       :20699  
+ CNT_FAM_MEMBERS      status      CODE_GENDER.F    CODE_GENDER.M   
+ Min.   : 1.000   0      :52133   Min.   :0.0000   Min.   :0.0000  
+ 1st Qu.: 2.000   1      : 6491   1st Qu.:0.0000   1st Qu.:0.0000  
+ Median : 2.000   X      : 5790   Median :1.0000   Median :0.0000  
+ Mean   : 2.174   C      : 1805   Mean   :0.6496   Mean   :0.3504  
+ 3rd Qu.: 3.000   2      :  712   3rd Qu.:1.0000   3rd Qu.:1.0000  
+ Max.   :20.000   5      :  374   Max.   :1.0000   Max.   :1.0000  
+                  (Other):  309                                    </code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>##K-Fold-Validation</p>
+<!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuICAgIyA3NSUgb2YgdGhlIHNhbXBsZSBzaXplXG4gIHNtcF9zaXplIDwtIGZsb29yKDAuNzUgKiBucm93KGRhdGEpKVxuICBcbiAgIyBzZXQgdGhlIHNlZWQgdG8gbWFrZSB5b3VyIHBhcnRpdGlvbiByZXByb2R1Y2libGVcbiAgc2V0LnNlZWQoMTIzKVxuICBkYXRhX2luZCA8LSBzYW1wbGUoc2VxX2xlbihucm93KGRhdGEpKSwgc2l6ZSA9IHNtcF9zaXplKVxuICB0cmFpbiA8LSBhc190aWJibGUoZGF0YVtkYXRhX2luZCwgXSlcbiAgdGVzdCA8LSBhc190aWJibGUoZGF0YVstZGF0YV9pbmQsIF0pXG5cblxuICBcbiAgXG5gYGAifQ== -->
-<pre class="r"><code>   # 75% of the sample size
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuICAgIyA3NSUgb2YgdGhlIHNhbXBsZSBzaXplXG4gIHNtcF9zaXplIDwtIGZsb29yKDAuNzUgKiBucm93KGRhdGEpKVxuICBcbiAgIyBzZXQgdGhlIHNlZWQgdG8gbWFrZSB5b3VyIHBhcnRpdGlvbiByZXByb2R1Y2libGVcbiAgc2V0LnNlZWQoMTIzKVxuICBkYXRhX2luZCA8LSBzYW1wbGUoc2VxX2xlbihucm93KGRhdGEpKSwgc2l6ZSA9IHNtcF9zaXplKVxuICB0cmFpbiA8LSBhc190aWJibGUoZGF0YVtkYXRhX2luZCwgXSlcbiAgdGVzdCA8LSBhc190aWJibGUoZGF0YVstZGF0YV9pbmQsIF0pXG5cblxuICBcbiAgXG5gYGBcbmBgYCJ9 -->
+<pre class="r"><code>```r
+   # 75% of the sample size
   smp_size &lt;- floor(0.75 * nrow(data))
   
   # set the seed to make your partition reproducible
@@ -1879,45 +2079,116 @@ summary(data)</code></pre>
 
   
   </code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuICAjIyBUYWtlIE1vZGVsMSBhbmQgU2NhbGUgZGF0YVxuICAjI3NjYWxlIGFuZCBwcmVwcm9jZXNzIHRyYWluaW5nIGFuZCB0ZXN0IGRhdGFcbiAgbGlicmFyeShjYXJldClcbiAgcHJlX3Byb2NfdmFsIDwtIHByZVByb2Nlc3ModHJhaW4sIG1ldGhvZCA9IGMoXCJjZW50ZXJcIiwgXCJzY2FsZVwiKSkgIFxuICB0cmFpbiA9IHByZWRpY3QocHJlX3Byb2NfdmFsLCB0cmFpbilcbiAgdGVzdCA9IHByZWRpY3QocHJlX3Byb2NfdmFsLCB0ZXN0KVxuICAgIHRyYWluIDwtIHRlbnNvcl9zbGljZXNfZGF0YXNldCh0cmFpbilcbiAgdGVzdCA8LSB0ZW5zb3Jfc2xpY2VzX2RhdGFzZXQodGVzdClcbiAgc3VtbWFyeSh0cmFpbilcbmBgYCJ9 -->
-<pre class="r"><code>  ## Take Model1 and Scale data
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuICAjIyBUYWtlIE1vZGVsMSBhbmQgU2NhbGUgZGF0YVxuICAjI3NjYWxlIGFuZCBwcmVwcm9jZXNzIHRyYWluaW5nIGFuZCB0ZXN0IGRhdGFcbiAgbGlicmFyeShjYXJldClcbiAgcHJlX3Byb2NfdmFsIDwtIHByZVByb2Nlc3ModHJhaW4sIG1ldGhvZCA9IGMoXFxjZW50ZXJcXCwgXFxzY2FsZVxcKSkgIFxuICB0cmFpbiA9IHByZWRpY3QocHJlX3Byb2NfdmFsLCB0cmFpbilcbiAgdGVzdCA9IHByZWRpY3QocHJlX3Byb2NfdmFsLCB0ZXN0KVxuICAgIHRyYWluIDwtIHRlbnNvcl9zbGljZXNfZGF0YXNldCh0cmFpbilcbiAgdGVzdCA8LSB0ZW5zb3Jfc2xpY2VzX2RhdGFzZXQodGVzdClcbiAgc3VtbWFyeSh0cmFpbilcbmBgYFxuYGBgIn0= --&gt;
+
+```r
+```r
+  ## Take Model1 and Scale data
   ##scale and preprocess training and test data
   library(caret)
-  pre_proc_val &lt;- preProcess(train, method = c(&quot;center&quot;, &quot;scale&quot;))  
+  pre_proc_val &lt;- preProcess(train, method = c(\center\, \scale\))  
   train = predict(pre_proc_val, train)
   test = predict(pre_proc_val, test)
     train &lt;- tensor_slices_dataset(train)
   test &lt;- tensor_slices_dataset(test)
   summary(train)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiPFRlbnNvclNsaWNlRGF0YXNldCBlbGVtZW50X3NwZWM9eydJRCc6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLmZsb2F0MzIsIG5hbWU9Tm9uZSksICdDT0RFX0dFTkRFUic6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLnN0cmluZywgbmFtZT1Ob25lKSwgJ0ZMQUdfT1dOX0NBUic6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLnN0cmluZywgbmFtZT1Ob25lKSwgJ0ZMQUdfT1dOX1JFQUxUWSc6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLnN0cmluZywgbmFtZT1Ob25lKSwgJ0NOVF9DSElMRFJFTic6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLmZsb2F0MzIsIG5hbWU9Tm9uZSksICdBTVRfSU5DT01FX1RPVEFMJzogVGVuc29yU3BlYyhzaGFwZT0oKSwgZHR5cGU9dGYuZmxvYXQzMiwgbmFtZT1Ob25lKSwgJ05BTUVfSU5DT01FX1RZUEUnOiBUZW5zb3JTcGVjKHNoYXBlPSgpLCBkdHlwZT10Zi5zdHJpbmcsIG5hbWU9Tm9uZSksICdOQU1FX0VEVUNBVElPTl9UWVBFJzogVGVuc29yU3BlYyhzaGFwZT0oKSwgZHR5cGU9dGYuc3RyaW5nLCBuYW1lPU5vbmUpLCAnTkFNRV9GQU1JTFlfU1RBVFVTJzogVGVuc29yU3BlYyhzaGFwZT0oKSwgZHR5cGU9dGYuc3RyaW5nLCBuYW1lPU5vbmUpLCAnTkFNRV9IT1VTSU5HX1RZUEUnOiBUZW5zb3JTcGVjKHNoYXBlPSgpLCBkdHlwZT10Zi5zdHJpbmcsIG5hbWU9Tm9uZSksICdEQVlTX0JJUlRIJzogVGVuc29yU3BlYyhzaGFwZT0oKSwgZHR5cGU9dGYuZmxvYXQzMiwgbmFtZT1Ob25lKSwgJ0RBWVNfRU1QTE9ZRUQnOiBUZW5zb3JTcGVjKHNoYXBlPSgpLCBkdHlwZT10Zi5mbG9hdDMyLCBuYW1lPU5vbmUpLCAnRkxBR19NT0JJTCc6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLmZsb2F0MzIsIG5hbWU9Tm9uZSksICdGTEFHX1dPUktfUEhPTkUnOiBUZW5zb3JTcGVjKHNoYXBlPSgpLCBkdHlwZT10Zi5mbG9hdDMyLCBuYW1lPU5vbmUpLCAnRkxBR19QSE9ORSc6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLmZsb2F0MzIsIG5hbWU9Tm9uZSksICdGTEFHX0VNQUlMJzogVGVuc29yU3BlYyhzaGFwZT0oKSwgZHR5cGU9dGYuZmxvYXQzMiwgbmFtZT1Ob25lKSwgJ09DQ1VQQVRJT05fVFlQRSc6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLnN0cmluZywgbmFtZT1Ob25lKSwgJ0NOVF9GQU1fTUVNQkVSUyc6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLmZsb2F0MzIsIG5hbWU9Tm9uZSksICdzdGF0dXMnOiBUZW5zb3JTcGVjKHNoYXBlPSgpLCBkdHlwZT10Zi5zdHJpbmcsIG5hbWU9Tm9uZSl9PlxuIn0= -->
-<pre><code>&lt;TensorSliceDataset element_spec={&#39;ID&#39;: TensorSpec(shape=(), dtype=tf.float32, name=None), &#39;CODE_GENDER&#39;: TensorSpec(shape=(), dtype=tf.string, name=None), &#39;FLAG_OWN_CAR&#39;: TensorSpec(shape=(), dtype=tf.string, name=None), &#39;FLAG_OWN_REALTY&#39;: TensorSpec(shape=(), dtype=tf.string, name=None), &#39;CNT_CHILDREN&#39;: TensorSpec(shape=(), dtype=tf.float32, name=None), &#39;AMT_INCOME_TOTAL&#39;: TensorSpec(shape=(), dtype=tf.float32, name=None), &#39;NAME_INCOME_TYPE&#39;: TensorSpec(shape=(), dtype=tf.string, name=None), &#39;NAME_EDUCATION_TYPE&#39;: TensorSpec(shape=(), dtype=tf.string, name=None), &#39;NAME_FAMILY_STATUS&#39;: TensorSpec(shape=(), dtype=tf.string, name=None), &#39;NAME_HOUSING_TYPE&#39;: TensorSpec(shape=(), dtype=tf.string, name=None), &#39;DAYS_BIRTH&#39;: TensorSpec(shape=(), dtype=tf.float32, name=None), &#39;DAYS_EMPLOYED&#39;: TensorSpec(shape=(), dtype=tf.float32, name=None), &#39;FLAG_MOBIL&#39;: TensorSpec(shape=(), dtype=tf.float32, name=None), &#39;FLAG_WORK_PHONE&#39;: TensorSpec(shape=(), dtype=tf.float32, name=None), &#39;FLAG_PHONE&#39;: TensorSpec(shape=(), dtype=tf.float32, name=None), &#39;FLAG_EMAIL&#39;: TensorSpec(shape=(), dtype=tf.float32, name=None), &#39;OCCUPATION_TYPE&#39;: TensorSpec(shape=(), dtype=tf.string, name=None), &#39;CNT_FAM_MEMBERS&#39;: TensorSpec(shape=(), dtype=tf.float32, name=None), &#39;status&#39;: TensorSpec(shape=(), dtype=tf.string, name=None)}&gt;</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuICBcbmBgYCJ9 -->
-<pre class="r"><code>  </code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShrZXJhcylcblxuXG5gYGAifQ== -->
-<pre class="r"><code>library(keras)
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-output-begin eyJkYXRhIjoiPFRlbnNvclNsaWNlRGF0YXNldCBlbGVtZW50X3NwZWM9eydJRCc6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLmZsb2F0MzIsIG5hbWU9Tm9uZSksICdDT0RFX0dFTkRFUic6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLnN0cmluZywgbmFtZT1Ob25lKSwgJ0ZMQUdfT1dOX0NBUic6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLnN0cmluZywgbmFtZT1Ob25lKSwgJ0ZMQUdfT1dOX1JFQUxUWSc6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLnN0cmluZywgbmFtZT1Ob25lKSwgJ0NOVF9DSElMRFJFTic6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLmZsb2F0MzIsIG5hbWU9Tm9uZSksICdBTVRfSU5DT01FX1RPVEFMJzogVGVuc29yU3BlYyhzaGFwZT0oKSwgZHR5cGU9dGYuZmxvYXQzMiwgbmFtZT1Ob25lKSwgJ05BTUVfSU5DT01FX1RZUEUnOiBUZW5zb3JTcGVjKHNoYXBlPSgpLCBkdHlwZT10Zi5zdHJpbmcsIG5hbWU9Tm9uZSksICdOQU1FX0VEVUNBVElPTl9UWVBFJzogVGVuc29yU3BlYyhzaGFwZT0oKSwgZHR5cGU9dGYuc3RyaW5nLCBuYW1lPU5vbmUpLCAnTkFNRV9GQU1JTFlfU1RBVFVTJzogVGVuc29yU3BlYyhzaGFwZT0oKSwgZHR5cGU9dGYuc3RyaW5nLCBuYW1lPU5vbmUpLCAnTkFNRV9IT1VTSU5HX1RZUEUnOiBUZW5zb3JTcGVjKHNoYXBlPSgpLCBkdHlwZT10Zi5zdHJpbmcsIG5hbWU9Tm9uZSksICdEQVlTX0JJUlRIJzogVGVuc29yU3BlYyhzaGFwZT0oKSwgZHR5cGU9dGYuZmxvYXQzMiwgbmFtZT1Ob25lKSwgJ0RBWVNfRU1QTE9ZRUQnOiBUZW5zb3JTcGVjKHNoYXBlPSgpLCBkdHlwZT10Zi5mbG9hdDMyLCBuYW1lPU5vbmUpLCAnRkxBR19NT0JJTCc6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLmZsb2F0MzIsIG5hbWU9Tm9uZSksICdGTEFHX1dPUktfUEhPTkUnOiBUZW5zb3JTcGVjKHNoYXBlPSgpLCBkdHlwZT10Zi5mbG9hdDMyLCBuYW1lPU5vbmUpLCAnRkxBR19QSE9ORSc6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLmZsb2F0MzIsIG5hbWU9Tm9uZSksICdGTEFHX0VNQUlMJzogVGVuc29yU3BlYyhzaGFwZT0oKSwgZHR5cGU9dGYuZmxvYXQzMiwgbmFtZT1Ob25lKSwgJ09DQ1VQQVRJT05fVFlQRSc6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLnN0cmluZywgbmFtZT1Ob25lKSwgJ0NOVF9GQU1fTUVNQkVSUyc6IFRlbnNvclNwZWMoc2hhcGU9KCksIGR0eXBlPXRmLmZsb2F0MzIsIG5hbWU9Tm9uZSksICdzdGF0dXMnOiBUZW5zb3JTcGVjKHNoYXBlPSgpLCBkdHlwZT10Zi5zdHJpbmcsIG5hbWU9Tm9uZSl9PlxuIn0= --&gt;
 </code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3RyKHRyYWluX2RhdGFbWzFdXSlcbmBgYCJ9 -->
-<pre class="r"><code>str(train_data[[1]])</code></pre>
+<p>&lt;TensorSliceDataset element_spec={‘ID’: TensorSpec(shape=(),
+dtype=tf.float32, name=None), ‘CODE_GENDER’: TensorSpec(shape=(),
+dtype=tf.string, name=None), ‘FLAG_OWN_CAR’: TensorSpec(shape=(),
+dtype=tf.string, name=None), ‘FLAG_OWN_REALTY’: TensorSpec(shape=(),
+dtype=tf.string, name=None), ‘CNT_CHILDREN’: TensorSpec(shape=(),
+dtype=tf.float32, name=None), ‘AMT_INCOME_TOTAL’: TensorSpec(shape=(),
+dtype=tf.float32, name=None), ‘NAME_INCOME_TYPE’: TensorSpec(shape=(),
+dtype=tf.string, name=None), ‘NAME_EDUCATION_TYPE’: TensorSpec(shape=(),
+dtype=tf.string, name=None), ‘NAME_FAMILY_STATUS’: TensorSpec(shape=(),
+dtype=tf.string, name=None), ‘NAME_HOUSING_TYPE’: TensorSpec(shape=(),
+dtype=tf.string, name=None), ‘DAYS_BIRTH’: TensorSpec(shape=(),
+dtype=tf.float32, name=None), ‘DAYS_EMPLOYED’: TensorSpec(shape=(),
+dtype=tf.float32, name=None), ‘FLAG_MOBIL’: TensorSpec(shape=(),
+dtype=tf.float32, name=None), ‘FLAG_WORK_PHONE’: TensorSpec(shape=(),
+dtype=tf.float32, name=None), ‘FLAG_PHONE’: TensorSpec(shape=(),
+dtype=tf.float32, name=None), ‘FLAG_EMAIL’: TensorSpec(shape=(),
+dtype=tf.float32, name=None), ‘OCCUPATION_TYPE’: TensorSpec(shape=(),
+dtype=tf.string, name=None), ‘CNT_FAM_MEMBERS’: TensorSpec(shape=(),
+dtype=tf.float32, name=None), ‘status’: TensorSpec(shape=(),
+dtype=tf.string, name=None)}&gt;</p>
+<pre><code>
+
+
+&lt;!-- rnb-output-end --&gt;
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuICBcbmBgYFxuYGBgIn0= --&gt;
+
+```r
+```r
+  </code></pre>
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubGlicmFyeShrZXJhcylcblxuXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+library(keras)
+</code></pre>
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuc3RyKHRyYWluX2RhdGFbWzFdXSlcbmBgYFxuYGBgIn0= --&gt;
+
+```r
+```r
+str(train_data[[1]])</code></pre>
+<p>```</p>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 </div>
+</div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIlByb2plY3QgUGFydCAyIg0Kb3V0cHV0OiANCiAgaHRtbF9ub3RlYm9vazogDQogICAgdGhlbWU6IGNlcnVsZWFuDQogICAgaGlnaGxpZ2h0OiB0ZXh0bWF0ZQ0KLS0tDQoNCmBgYHtyIHNldHVwLCBpbmNsdWRlPUZBTFNFfQ0Ka25pdHI6Om9wdHNfY2h1bmskc2V0KHdhcm5pbmcgPSBGQUxTRSwgbWVzc2FnZSA9IEZBTFNFKQ0KYGBgDQoNCioqKg0KDQpUaGlzIG5vdGVib29rIGNvbnRhaW5zIHRoZSBjb2RlIHNhbXBsZXMgZm91bmQgaW4gQ2hhcHRlciAzLCBTZWN0aW9uIDUgb2YgW0RlZXAgTGVhcm5pbmcgd2l0aCBSXShodHRwczovL3d3dy5tYW5uaW5nLmNvbS9ib29rcy9kZWVwLWxlYXJuaW5nLXdpdGgtcikuIE5vdGUgdGhhdCB0aGUgb3JpZ2luYWwgdGV4dCBmZWF0dXJlcyBmYXIgbW9yZSBjb250ZW50LCBpbiBwYXJ0aWN1bGFyIGZ1cnRoZXIgZXhwbGFuYXRpb25zIGFuZCBmaWd1cmVzOiBpbiB0aGlzIG5vdGVib29rLCB5b3Ugd2lsbCBvbmx5IGZpbmQgc291cmNlIGNvZGUgYW5kIHJlbGF0ZWQgY29tbWVudHMuDQoNCioqKg0KDQoNCiMjIERhdGEgaW1wb3J0DQoNCg0KYGBge3J9DQpsaWJyYXJ5KGhlcmUpDQpsaWJyYXJ5KHRpZHl2ZXJzZSkNCmxpYnJhcnkoZ2dwbG90MikgIA0KbGlicmFyeShkcGx5cikNCmxpYnJhcnkodGVuc29yZmxvdykNCmxpYnJhcnkodGZkYXRhc2V0cykNCmxpYnJhcnkoa2VyYXMpDQojTE9BRCBEQVRBDQpzZXR3ZChnZXR3ZCgpKQ0KZGF0YUluID0gIi4uL0RhdGEvRGF0YXNldC1wYXJ0LTIuY3N2Ig0KIGRhdGFfaW4gPC0gcmVhZC5jc3YoZGF0YUluLGhlYWRlciA9IFRSVUUsIHNlcCA9JywnKSANClZpZXcoZGF0YV9pbikNCmRhdGEgPC0gZGF0YS5mcmFtZShkYXRhX2luKQ0Kc3VtbWFyeShkYXRhKQ0KYGBgDQojI0NsZWFudXANCmBgYHtyfQ0KZGF0YSA8LSBkYXRhICU+JSAgIHNlbGVjdCgtSUQpDQpjb2xzIDwtIGMoIkNPREVfR0VOREVSIiwgIkZMQUdfT1dOX0NBUiIsICJGTEFHX09XTl9SRUFMVFkiLCAiTkFNRV9JTkNPTUVfVFlQRSIsICJOQU1FX0VEVUNBVElPTl9UWVBFIiwgIk5BTUVfRkFNSUxZX1NUQVRVUyIsICJOQU1FX0hPVVNJTkdfVFlQRSIsICJGTEFHX01PQklMIiwgIkZMQUdfV09SS19QSE9ORSIsICJGTEFHX1BIT05FIiwgIkZMQUdfRU1BSUwiLCAiT0NDVVBBVElPTl9UWVBFIiwic3RhdHVzIikNCmNvbHMNCmRhdGFbY29sc10gPC0gbGFwcGx5KGRhdGFbY29sc10sIGZhY3RvcikNCnN1bW1hcnkoZGF0YSkNCmBgYA0KYGBge3J9DQogICAjIDc1JSBvZiB0aGUgc2FtcGxlIHNpemUNCiAgc21wX3NpemUgPC0gZmxvb3IoMC43NSAqIG5yb3coZGF0YSkpDQogIA0KICAjIHNldCB0aGUgc2VlZCB0byBtYWtlIHlvdXIgcGFydGl0aW9uIHJlcHJvZHVjaWJsZQ0KICBzZXQuc2VlZCgxMjMpDQogIGRhdGFfaW5kIDwtIHNhbXBsZShzZXFfbGVuKG5yb3coZGF0YSkpLCBzaXplID0gc21wX3NpemUpDQogIHRyYWluIDwtIGFzX3RpYmJsZShkYXRhW2RhdGFfaW5kLCBdKQ0KICB0ZXN0IDwtIGFzX3RpYmJsZShkYXRhWy1kYXRhX2luZCwgXSkNCg0KDQogIA0KICANCmBgYA0KYGBge3J9DQogICMjIFRha2UgTW9kZWwxIGFuZCBTY2FsZSBkYXRhDQogICMjc2NhbGUgYW5kIHByZXByb2Nlc3MgdHJhaW5pbmcgYW5kIHRlc3QgZGF0YQ0KICBsaWJyYXJ5KGNhcmV0KQ0KICBwcmVfcHJvY192YWwgPC0gcHJlUHJvY2Vzcyh0cmFpbiwgbWV0aG9kID0gYygiY2VudGVyIiwgInNjYWxlIikpICANCiAgdHJhaW4gPSBwcmVkaWN0KHByZV9wcm9jX3ZhbCwgdHJhaW4pDQogIHRlc3QgPSBwcmVkaWN0KHByZV9wcm9jX3ZhbCwgdGVzdCkNCiAgdHJhaW4gPC0gdGVuc29yX3NsaWNlc19kYXRhc2V0KHRyYWluKQ0KICB0ZXN0IDwtIHRlbnNvcl9zbGljZXNfZGF0YXNldCh0ZXN0KQ0KICBzdW1tYXJ5KHRyYWluKQ0KICANCmBgYA0KDQoNCmBgYHtyLCByZXN1bHRzPSdoaWRlJ30NCmxpYnJhcnkoa2VyYXMpDQojaHR0cHM6Ly93d3cudGVuc29yZmxvdy5vcmcvdHV0b3JpYWxzL3N0cnVjdHVyZWRfZGF0YS9mZWF0dXJlX2NvbHVtbnMNCg0KI2NlbnRlciBhbmQgc2NhbGUgLS0+IG1pbiBtYXgNCiNvbmUgaG90IGVuY29kaW5nDQojIE1hdHJpeCBhbmQgdmVjdG9yDQoNCiMgbW9kZWwgPSB0Zi5rZXJhcy5TZXF1ZW50aWFsKFsNCiMgICBmZWF0dXJlX2xheWVyLA0KIyAgIGxheWVycy5EZW5zZSgxMjgsIGFjdGl2YXRpb249J3JlbHUnKSwNCiMgICBsYXllcnMuRGVuc2UoMTI4LCBhY3RpdmF0aW9uPSdyZWx1JyksDQojICAgbGF5ZXJzLkRyb3BvdXQoLjEpLA0KIyAgIGxheWVycy5EZW5zZSgxKQ0KIyBdKQ0KIyANCiMgbW9kZWwuY29tcGlsZShvcHRpbWl6ZXI9J2FkYW0nLA0KIyAgICAgICAgICAgICAgIGxvc3M9dGYua2VyYXMubG9zc2VzLkJpbmFyeUNyb3NzZW50cm9weShmcm9tX2xvZ2l0cz1UcnVlKSwNCiMgICAgICAgICAgICAgICBtZXRyaWNzPVsnYWNjdXJhY3knXSkNCiMgDQojIG1vZGVsLmZpdCh0cmFpbl9kcywNCiMgICAgICAgICAgIHZhbGlkYXRpb25fZGF0YT12YWxfZHMsDQojICAgICAgICAgICBlcG9jaHM9MTApDQoNCmBgYA0KDQoNCg0KYGBge3J9DQpzdHIodHJhaW5fZGF0YVtbMV1dKQ0KYGBg</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlByb2plY3QgUGFydCAyIg0Kb3V0cHV0OiANCiAgaHRtbF9ub3RlYm9vazogDQogICAgdGhlbWU6IGNlcnVsZWFuDQogICAgaGlnaGxpZ2h0OiB0ZXh0bWF0ZQ0KLS0tDQoNCmBgYHtyIHNldHVwLCBpbmNsdWRlPUZBTFNFfQ0Ka25pdHI6Om9wdHNfY2h1bmskc2V0KHdhcm5pbmcgPSBGQUxTRSwgbWVzc2FnZSA9IEZBTFNFKQ0KYGBgDQoNCioqKg0KDQpUaGlzIG5vdGVib29rIGNvbnRhaW5zIHRoZSBjb2RlIHNhbXBsZXMgZm91bmQgaW4gQ2hhcHRlciAzLCBTZWN0aW9uIDUgb2YgW0RlZXAgTGVhcm5pbmcgd2l0aCBSXShodHRwczovL3d3dy5tYW5uaW5nLmNvbS9ib29rcy9kZWVwLWxlYXJuaW5nLXdpdGgtcikuIE5vdGUgdGhhdCB0aGUgb3JpZ2luYWwgdGV4dCBmZWF0dXJlcyBmYXIgbW9yZSBjb250ZW50LCBpbiBwYXJ0aWN1bGFyIGZ1cnRoZXIgZXhwbGFuYXRpb25zIGFuZCBmaWd1cmVzOiBpbiB0aGlzIG5vdGVib29rLCB5b3Ugd2lsbCBvbmx5IGZpbmQgc291cmNlIGNvZGUgYW5kIHJlbGF0ZWQgY29tbWVudHMuDQoNCioqKg0KDQojIERhdGEgRXhwbG9yYXRpb24gJiBQcmVwYXJhdGlvbiANCiogT3VyIGdvYWwgaW4gdGhlIHNlY29uZCBwYXJ0IG9mIHRoZSBhc3NpZ25tZW50IGlzIHRvIHByZWRpY3QgaG93IGdvb2QgYSAobmV3KSBjdXN0b21lciB3aWxsIHBheSANCmJhY2sgdGhlaXIgY3JlZGl0IGNhcmQgZGVwdHMuIEluIHRoZSBkYXRhIHNldCBhcHBsaWNhdGlvbiBkYXRhIGZyb20gY3VycmVudCBjdXN0b21lcnMgKHRoZSBmaXJzdCAxOCANCmF0dHJpYnV0ZXMpIHRvZ2V0aGVyIHdpdGggdGhlaXIgc3RhdHVzIChsYXN0IGF0dHJpYnV0ZTsgdGFyZ2V0KSBhcmUgZ2l2ZW4uICANCiogVGhlIGF0dHJpYnV0ZXMgZnJvbSB0aGUgYXBwbGljYXRpb25zIGFyZSANCg0KQXR0cmlidXRlIE5hbWUgfCBFeHBsYW5hdGlvbiB8IFJlbWFya3MNCi0tLS0tLS0tLS0tLS0gfCAtLS0tLS0tLS0tLS0tIHwgLS0tLS0tLS0tLS0tLQ0KSUQgfCBDbGllbnQgfCBudW1iZXIgDQpDT0RFX0dFTkRFUiB8IEdlbmRlciB8IA0KRkxBR19PV05fQ0FSIHwgSXMgdGhlcmUgYSBjYXIgfCANCkZMQUdfT1dOX1JFQUxUWSB8IElzIHRoZXJlIGEgcHJvcGVydHkgfCANCkNOVF9DSElMRFJFTiB8IE51bWJlciBvZiBjaGlsZHJlbiB8IA0KQU1UX0lOQ09NRV9UT1RBTCB8IEFubnVhbCBpbmNvbWUgfCANCk5BTUVfSU5DT01FX1RZUEUgfCBJbmNvbWUgY2F0ZWdvcnkgfCANCk5BTUVfRURVQ0FUSU9OX1RZUEUgfCBFZHVjYXRpb24gbGV2ZWwgfCANCk5BTUVfRkFNSUxZX1NUQVRVUyB8IE1hcml0YWwgc3RhdHVzIHwgDQpOQU1FX0hPVVNJTkdfVFlQRSB8IFdheSBvZiBsaXZpbmcgfCANCkRBWVNfQklSVEggfCBCaXJ0aGRheSB8IENvdW50IGJhY2t3YXJkcyBmcm9tIGN1cnJlbnQgZGF5ICgwKSwgLTEgbWVhbnMgeWVzdGVyZGF5IA0KREFZU19FTVBMT1lFRCB8IFN0YXJ0IGRhdGUgb2YgZW1wbG95bWVudCB8IENvdW50IGJhY2t3YXJkcyBmcm9tIGN1cnJlbnQgZGF5KDApLiBJZiBwb3NpdGl2ZSwgaXQgbWVhbnMgdGhlIHBlcnNvbiB1bmVtcGxveWVkLiANCkZMQUdfTU9CSUwgfCBJcyB0aGVyZSBhIG1vYmlsZSBwaG9uZSB8IA0KRkxBR19XT1JLX1BIT05FIHwgSXMgdGhlcmUgYSB3b3JrIHBob25lIHwgDQpGTEFHX1BIT05FIHwgSXMgdGhlcmUgYSBwaG9uZSB8IA0KRkxBR19FTUFJTCB8IElzIHRoZXJlIGFuIGVtYWlsIHwgDQpPQ0NVUEFUSU9OX1RZUEUgfCBPY2N1cGF0aW9uIHwgDQpDTlRfRkFNX01FTUJFUlMgfCBGYW1pbHkgc2l6ZSB8IA0KDQoqIFRoZSBsYXN0IGF0dHJpYnV0ZSBzdGF0dXMgY29udGFpbnMgdGhlIOKAnHBheS1iYWNrIGJlaGF2aW9y4oCdLCBpLmUuIHdoZW4gZGlkIHRoYXQgY3VzdG9tZXIgcGF5IGJhY2sgDQp0aGVpciBkZXB0czogDQogICsgMDogMS0yOSBkYXlzIHBhc3QgZHVlIA0KICArIDE6IDMwLTU5IGRheXMgcGFzdCBkdWUgDQogICsgMjogNjAtODkgZGF5cyBvdmVyZHVlIA0KICArIDM6IDkwLTExOSBkYXlzIG92ZXJkdWUgDQogICsgNDogMTIwLTE0OSBkYXlzIG92ZXJkdWUgDQogICsgNTogT3ZlcmR1ZSBvciBiYWQgZGVidHMsIHdyaXRlLW9mZnMgZm9yIG1vcmUgdGhhbiAxNTAgZGF5cyANCiAgKyBDOiBwYWlkIG9mZiB0aGF0IG1vbnRoIA0KICArIFg6IE5vIGxvYW4gZm9yIHRoZSBtb250aCANClBsZWFzZSBub3RlOiBXZSBhcmUgbGVhcm5pbmcgb25seSB0aGUgcGF5LWJhY2sgYmVoYXZpb3IuIFRoZSBkZWNpc2lvbiwgaS5lLiBpZiB3ZSBhY2NlcHQgYSBjdXN0b21lciBvciANCm5vdCwgaXMgZG9uZSBpbiBhbm90aGVyIHByb2Nlc3Mgc3RlcCDigJMgbm90IGhlcmUhICANCg0KKipTaW5nbGUtbGFiZWwsIE11bHRpY2xhc3MgY2xhc3NpZmljYXRpb24gaW4gcGFnZSA3MyBpbiBbRGVlcCBMZWFybmluZyB3aXRoIFJdKGh0dHBzOi8vd3d3Lm1hbm5pbmcuY29tL2Jvb2tzL2RlZXAtbGVhcm5pbmctd2l0aC1yKSoqDQoNCioqKg0KDQojIE1haW4gdGFzayANCiogRGVzaWduIHlvdXIgbmV0d29yay4gV2h5IGRpZCB5b3UgdXNlIGEgZmVlZC1mb3J3YXJkIG5ldHdvcmssIG9yIGEgY29udm9sdXRpb25hbCBvciByZWN1cnNpdmUgDQpuZXR3b3JrIOKAkyBhbmQgd2h5IG5vdD8gIA0KKiBVc2Ugay1mb2xkIHZhbGlkYXRpb24gKHdpdGggayA9IDEwKSB0byBmaW5kIHRoZSBiZXN0IGh5cGVycGFyYW1ldGVycyBmb3IgeW91ciBuZXR3b3JrLiANCiogVXNlIHRoZSBhdmVyYWdlIG9mIHRoZSBhY2N1cmFjeSB0byBldmFsdWF0ZSB0aGUgcGVyZm9ybWFuY2Ugb2YgeW91ciB0cmFpbmVkIG5ldHdvcmsuIA0KKiBGaW5kIGEg4oCccmVhc29uYWJsZeKAnSBnb29kIG1vZGVsLiBBcmd1ZSB3aHkgdGhhdCBtb2RlbCBpcyByZWFzb25hYmxlLiBJZiB5b3UgYXJlIG5vdCBhYmxlIHRvIGZpbmQgYSANCnJlYXNvbmFibGUgZ29vZCBtb2RlbCwgZXhwbGFpbiB3aGF0IHlvdSBhbGwgZGlkIHRvIGZpbmQgYSBnb29kIG1vZGVsIGFuZCBhcmd1ZSB3aHkgeW91IHRoaW5rIA0KdGhhdOKAmXMgbm90IGEgZ29vZCBtb2RlbC4gIA0KKiBTYXZlIHlvdXIgdHJhaW5lZCBuZXVyYWwgbmV0d29yayB3aXRoIHNhdmVfbW9kZWxfaGRmNS4gQWxzbyBzYXZlIHlvdXIgZGF0YSBzZXRzIHlvdSB1c2VkIA0KZm9yIHRyYWluaW5nLCB0ZXN0aW5nIGFuZCB2YWxpZGF0aW9uLiANCg0KKioqDQoNCiMgU29tZSBoaW50cyANCiogRGF0YSBwcmVwcm9jZXNzaW5nIGlzIGVhc2llciBoZXJlOyBubyBmZWF0dXJlIGVuZ2luZWVyaW5nIGlzIG5lZWRlZC4gDQoqIFlvdSBtYXkgYmUgYWJsZSB0byByZXVzZSBwYXJ0cyBvZiB0aGUgZXhlcmNpc2VzIHdlIHVzZWQgaW4gb3VyIGV4YW1wbGVzIGR1cmluZyBsZWN0dXJlcy4gDQoqIEFsbCBpbi0gYW5kIG91dHB1dCB2YWx1ZXMgbmVlZCB0byBiZSBmbG9hdGluZyBudW1iZXJzIChvciBpbnRlZ2VycyBpbiBleGNlcHRpb25zKSBpbiB0aGUgcmFuZ2Ugb2YgDQpbMCwxXS4gDQoqIFBsZWFzZSBub3RlIHRoYXQgYSBuZXVyYWwgbmV0d29yayBleHBlY3RzIGEgUiBtYXRyaXggb3IgdmVjdG9yLCBub3QgZGF0YSBmcmFtZXMuIFRyYW5zZm9ybSB5b3VyIA0KZGF0YSAoZS5nLiBhIGRhdGEgZnJhbWUpIGludG8gYSBtYXRyaXggd2l0aCBkYXRhLm1hdHJpeCBpZiBuZWVkZWQuICANCiogVGhlcmUgYXJlIHNvbWUgbW9kZWxzIHdoaWNoIHNob3cgYW4gYWNjdXJhY3kgaGlnaGVyIHRoYW4gOTAlICghKSBmb3IgdHJhaW5pbmcgKGFuZCB0ZXN0KSBkYXRhIOKAkyANCmFmdGVyIGxlYXJuaW5nIG1vcmUgdGhhbiAxMDAwIGVwb2Nocy4gDQoNCioqKg0KDQojIEltcG9ydGFudCBub3Rlcw0KKiBTcGFjZXMgbXVzdCBiZSByZW1vdmVkIGluIGJldHdlZW4gJ2BgYHtyfScgYW5kICdgYGAnLCBlbHNlIGFuIGVycm9yIHdpdGggJzwhLS0gcm5iLXNvdXJjZS1lbmQgLS0+JyB3aWxsIGJlIHByb2R1Y2VkDQoNCiMjIERhdGEgaW1wb3J0DQoNCg0KYGBge3J9DQpsaWJyYXJ5KGhlcmUpDQpsaWJyYXJ5KHRpZHl2ZXJzZSkNCmxpYnJhcnkoZ2dwbG90MikNCmxpYnJhcnkoZHBseXIpDQpsaWJyYXJ5KHRlbnNvcmZsb3cpDQpsaWJyYXJ5KHRmZGF0YXNldHMpDQpsaWJyYXJ5KGtlcmFzKQ0KbGlicmFyeShjYXJldCkNCiNMT0FEIERBVEENCnNldHdkKGdldHdkKCkpDQpkYXRhSW4gPSAiLi4vRGF0YS9EYXRhc2V0LXBhcnQtMi5jc3YiDQpkYXRhX2luIDwtIHJlYWQuY3N2KGRhdGFJbixoZWFkZXIgPSBUUlVFLCBzZXAgPScsJykNClZpZXcoZGF0YV9pbikNCmRhdGEgPC0gZGF0YS5mcmFtZShkYXRhX2luKQ0Kc3VtbWFyeShkYXRhKQ0KYGBgDQojI0NsZWFudXANCmBgYHtyfQ0KZGF0YSA8LSBkYXRhICU+JSBzZWxlY3QoLUlEKQ0KY29scyA8LSBjKCJDT0RFX0dFTkRFUiIsIkZMQUdfT1dOX0NBUiIsIkZMQUdfT1dOX1JFQUxUWSIsIk5BTUVfSU5DT01FX1RZUEUiLCJOQU1FX0VEVUNBVElPTl9UWVBFIiwgIk5BTUVfRkFNSUxZX1NUQVRVUyIsICJOQU1FX0hPVVNJTkdfVFlQRSIsIkZMQUdfTU9CSUwiLCJGTEFHX1dPUktfUEhPTkUiLCJGTEFHX1BIT05FIiwiRkxBR19FTUFJTCIsICJPQ0NVUEFUSU9OX1RZUEUiLCJzdGF0dXMiKQ0KY29scw0KZGF0YVtjb2xzXSA8LSBsYXBwbHkoZGF0YVtjb2xzXSxmYWN0b3IpDQoNCiMgT25lLUhvdC1FbmNvZGluZyBmb3IgQ09ERV9HRU5ERVINCmRteSA8LSBkdW1teVZhcnMoIiB+IENPREVfR0VOREVSIiwgZGF0YSA9IGRhdGEpDQp0cnNmIDwtIGRhdGEuZnJhbWUocHJlZGljdChkbXksIG5ld2RhdGEgPSBkYXRhKSkNCmRhdGEgPC0gY2JpbmQoZGF0YSwgdHJzZikNCmRhdGEgPC0gZGF0YSAlPiUgc2VsZWN0KC1DT0RFX0dFTkRFUikNCg0Kc3VtbWFyeShkYXRhKQ0KYGBgDQojI0stRm9sZC1WYWxpZGF0aW9uDQpgYGB7cn0NCiAgICMgNzUlIG9mIHRoZSBzYW1wbGUgc2l6ZQ0KICBzbXBfc2l6ZSA8LSBmbG9vcigwLjc1ICogbnJvdyhkYXRhKSkNCiAgDQogICMgc2V0IHRoZSBzZWVkIHRvIG1ha2UgeW91ciBwYXJ0aXRpb24gcmVwcm9kdWNpYmxlDQogIHNldC5zZWVkKDEyMykNCiAgZGF0YV9pbmQgPC0gc2FtcGxlKHNlcV9sZW4obnJvdyhkYXRhKSksIHNpemUgPSBzbXBfc2l6ZSkNCiAgdHJhaW4gPC0gYXNfdGliYmxlKGRhdGFbZGF0YV9pbmQsIF0pDQogIHRlc3QgPC0gYXNfdGliYmxlKGRhdGFbLWRhdGFfaW5kLCBdKQ0KDQoNCiAgDQogIA0KYGBgDQpgYGB7cn0NCiAgIyMgVGFrZSBNb2RlbDEgYW5kIFNjYWxlIGRhdGENCiAgIyNzY2FsZSBhbmQgcHJlcHJvY2VzcyB0cmFpbmluZyBhbmQgdGVzdCBkYXRhDQogIGxpYnJhcnkoY2FyZXQpDQogIHByZV9wcm9jX3ZhbCA8LSBwcmVQcm9jZXNzKHRyYWluLCBtZXRob2QgPSBjKCJjZW50ZXIiLCAic2NhbGUiKSkgIA0KICB0cmFpbiA9IHByZWRpY3QocHJlX3Byb2NfdmFsLCB0cmFpbikNCiAgdGVzdCA9IHByZWRpY3QocHJlX3Byb2NfdmFsLCB0ZXN0KQ0KICB0cmFpbiA8LSB0ZW5zb3Jfc2xpY2VzX2RhdGFzZXQodHJhaW4pDQogIHRlc3QgPC0gdGVuc29yX3NsaWNlc19kYXRhc2V0KHRlc3QpDQogIHN1bW1hcnkodHJhaW4pDQogIA0KYGBgDQoNCg0KYGBge3IsIHJlc3VsdHM9J2hpZGUnfQ0KbGlicmFyeShrZXJhcykNCiNodHRwczovL3d3dy50ZW5zb3JmbG93Lm9yZy90dXRvcmlhbHMvc3RydWN0dXJlZF9kYXRhL2ZlYXR1cmVfY29sdW1ucw0KDQojY2VudGVyIGFuZCBzY2FsZSAtLT4gbWluIG1heA0KI29uZSBob3QgZW5jb2RpbmcNCiMgTWF0cml4IGFuZCB2ZWN0b3INCg0KIyBtb2RlbCA9IHRmLmtlcmFzLlNlcXVlbnRpYWwoWw0KIyAgIGZlYXR1cmVfbGF5ZXIsDQojICAgbGF5ZXJzLkRlbnNlKDEyOCwgYWN0aXZhdGlvbj0ncmVsdScpLA0KIyAgIGxheWVycy5EZW5zZSgxMjgsIGFjdGl2YXRpb249J3JlbHUnKSwNCiMgICBsYXllcnMuRHJvcG91dCguMSksDQojICAgbGF5ZXJzLkRlbnNlKDEpDQojIF0pDQojIA0KIyBtb2RlbC5jb21waWxlKG9wdGltaXplcj0nYWRhbScsDQojICAgICAgICAgICAgICAgbG9zcz10Zi5rZXJhcy5sb3NzZXMuQmluYXJ5Q3Jvc3NlbnRyb3B5KGZyb21fbG9naXRzPVRydWUpLA0KIyAgICAgICAgICAgICAgIG1ldHJpY3M9WydhY2N1cmFjeSddKQ0KIyANCiMgbW9kZWwuZml0KHRyYWluX2RzLA0KIyAgICAgICAgICAgdmFsaWRhdGlvbl9kYXRhPXZhbF9kcywNCiMgICAgICAgICAgIGVwb2Nocz0xMCkNCg0KYGBgDQoNCg0KDQpgYGB7cn0NCnN0cih0cmFpbl9kYXRhW1sxXV0pDQpgYGA=</div>
 
 
 
