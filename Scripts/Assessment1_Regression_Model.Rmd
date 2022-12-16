@@ -35,7 +35,7 @@ library(vip) #variable important plots
 options(java.parameters = "-Xmx16g")
 getwd()
 lcdata <- readRDS("../Data/Out/cleanData.rds")
-lcdata <- data.frame(lcdata %>% dplyr::select(int_rate, term, loan_amnt,dti_merged,emp_length,term ,installment,home_ownership,purpose, revol_util,revol_bal))
+lcdata <- data.frame(lcdata %>% dplyr::select(int_rate, term, loan_amnt,dti_merged,term ,installment,home_ownership,purpose, revol_util,revol_bal))
 
 ```
 
@@ -63,7 +63,7 @@ We see that there are a number of outlines at the upper end of the data. We remo
 outliers  <- boxplot(lcdata$int_rate, plot=FALSE)$out
 lcdata<- lcdata[-which(lcdata$int_rate %in% outliers),]
 
-cols <- c("emp_length", "home_ownership", "purpose")
+cols <- c( "home_ownership", "purpose")
 lcdata[cols] <- lapply(lcdata[cols], factor)
 ```
 
@@ -157,11 +157,11 @@ Each of the defined models is now fit to the training data set.
 
 ```{r Fit models}
 lmFit <- fit(lmModel, int_rate ~ ., data = trainingSet_processed)
-#rfFit <- fit(rfModel, int_rate ~ ., data = trainingSet_processed)
-#saveRDS(rfFit, "../Data/Models/rfFit.rds")
+# rfFit <- fit(rfModel, int_rate ~ ., data = trainingSet_processed)
+# saveRDS(rfFit, "../Data/Models/rfFit.rds")
 rfFit <- readRDS("../Data/Models/rfFit.rds")
-#xgFit <- fit(xgModel, int_rate ~ ., data = trainingSet_processed)
-#saveRDS(rfFit, "../Data/Models/xgFit.rds")
+# xgFit <- fit(xgModel, int_rate ~ ., data = trainingSet_processed)
+# saveRDS(rfFit, "../Data/Models/xgFit.rds")
 rfFit <- readRDS("../Data/Models/xgFit.rds")
 ```
 
@@ -300,7 +300,7 @@ xgb_grid <- grid_latin_hypercube(
   finalize(mtry(), trainingSet_processed), #treat mtry() differently because it depends
   #on the actual number of predictors in the data.
   learn_rate(),
-  size = 15 #can be set to a higher value to improve results but is very time consuming
+  size = 50 #can be set to a higher value to improve results but is very time consuming
 )
 
 xgb_grid
@@ -319,16 +319,19 @@ For training we setup a 5-fold cross validation. Here a 5 fold was select to get
 
 ```{r setup vfold}
 set.seed(123)
-vb_folds <- vfold_cv(trainingSet, v = 2, strata = int_rate) 
+vb_folds <- vfold_cv(trainingSet, v = 5, strata = int_rate) 
 ```
 
 Using the defined tuning grid, the cross validation and our defined metrics we can now search for the best hyperparameters.
 
 ```{r tune grid}
-# library(doParallel)
-# doParallel::registerDoParallel()
+# all_cores <- parallel::detectCores(logical = FALSE)
 # 
-# set.seed(234)
+# library(doParallel)
+# cl <- makePSOCKcluster(all_cores)
+# registerDoParallel(cl)
+# 
+# set.seed(123)
 # xgb_res <- tune_grid(
 #   xgb_wf,
 #   resamples = vb_folds,
@@ -336,6 +339,7 @@ Using the defined tuning grid, the cross validation and our defined metrics we c
 #   metrics = metricSet,
 #   control = control_grid(save_pred = TRUE)
 # )
+# stopCluster(cl)
 # # Save a single object to a file
 # saveRDS(xgb_res, "../Data/Models/xgb_res.rds")
 xgb_res <- readRDS("../Data/Models/xgb_res.rds")
@@ -380,8 +384,8 @@ final_xgb
 The final model is now fit with the training and testdata set. Below we cn see the individual metrics and the the Plot that shows the predicted class values vs. the real data. We can see that with an RMSE of 'r collect_metrics(final_res)' and the plot that shows very little variance we are in a good spot with our model. The only negative thing that stands out is
 
 ```{r final fit}
-final_res <- last_fit(final_xgb, trainIndex, metrics=metricSet)
-saveRDS(final_res, "../Data/Models/final_res.rds")
+#final_res <- last_fit(final_xgb, trainIndex, metrics=metricSet)
+#saveRDS(final_res, "../Data/Models/final_res.rds")
 final_res <- readRDS("../Data/Models/final_res.rds")
 ```
 
