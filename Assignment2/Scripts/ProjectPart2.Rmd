@@ -56,7 +56,6 @@ their depts:
 Please note: We are learning only the pay-back behavior. The decision, i.e. if we accept a customer or 
 not, is done in another process step – not here!  
 
-**Single-label, Multiclass classification in page 73 in [Deep Learning with R](https://www.manning.com/books/deep-learning-with-r)**
 
 ***
 
@@ -86,11 +85,13 @@ after learning more than 1000 epochs.
 ***
 
 # Important notes
+* Single-label, Multiclass classification problem in page 73 in [Deep Learning with R](https://www.manning.com/books/deep-learning-with-r)
 * Spaces must be removed in between '```{r}' and '```', else an error with '<!-- rnb-source-end -->' will be produced
 
+
+***
+
 ## Data import
-
-
 ```{r}
 library(here)
 library(tidyverse)
@@ -121,6 +122,13 @@ trsf <- data.frame(predict(dmy, newdata = data))
 data <- cbind(data, trsf)
 data <- data %>% select(-CODE_GENDER)
 
+# One-Hot-Encoding for FLAG_OWN_CAR 
+dmyCar <- dummyVars(" ~ FLAG_OWN_CAR", data = data)
+trsfCar <- data.frame(predict(dmyCar, newdata = data))
+data <- cbind(data, trsfCar)
+data <- data %>% select(-FLAG_OWN_CAR)
+
+
 summary(data)
 ```
 ##K-Fold-Validation
@@ -141,7 +149,7 @@ summary(data)
 ```{r}
   ## Take Model1 and Scale data
   ##scale and preprocess training and test data
-  library(caret)
+  #library(caret)
   pre_proc_val <- preProcess(train, method = c("center", "scale"))  
   train = predict(pre_proc_val, train)
   test = predict(pre_proc_val, test)
