@@ -85,9 +85,10 @@ after learning more than 1000 epochs.
 ***
 
 # Important notes
-* Single-label, Multiclass classification problem in page 73 in [Deep Learning with R](https://www.manning.com/books/deep-learning-with-r)
+* Single-label, Multiclass classification problem on page 73 in [Deep Learning with R](https://www.manning.com/books/deep-learning-with-r)
 * Spaces must be removed in between '```{r}' and '```', else an error with '<!-- rnb-source-end -->' will be produced
-
+* K-Fold Validation on page 83ff and 94ff in [Deep Learning with R](https://www.manning.com/books/deep-learning-with-r)
+* Page 110, use Last-Layer activation softmax and loss function categorical_crossentropy
 
 ***
 
@@ -116,9 +117,11 @@ cols <- c("CODE_GENDER","FLAG_OWN_CAR","FLAG_OWN_REALTY","NAME_INCOME_TYPE","NAM
 cols
 data[cols] <- lapply(data[cols],factor)
 
+summary(data)
+
 # One-Hot-Encoding for CODE_GENDER
 dmy <- dummyVars(" ~ CODE_GENDER", data = data)
-trsf <- data.frame(predict(dmy, newdata = data))
+trsf <- data.frame(predict(dmy, newdata = data)) 
 data <- cbind(data, trsf)
 data <- data %>% select(-CODE_GENDER)
 
@@ -128,8 +131,80 @@ trsfCar <- data.frame(predict(dmyCar, newdata = data))
 data <- cbind(data, trsfCar)
 data <- data %>% select(-FLAG_OWN_CAR)
 
+# One-Hot-Encoding for FLAG_OWN_REALTY   
+dmyRealty <- dummyVars(" ~ FLAG_OWN_REALTY", data = data)
+trsfRealty <- data.frame(predict(dmyRealty, newdata = data))
+data <- cbind(data, trsfRealty)
+data <- data %>% select(-FLAG_OWN_REALTY)
+
+# One-Hot-Encoding for NAME_INCOME_TYPE   
+dmyNIT <- dummyVars(" ~ NAME_INCOME_TYPE", data = data)
+trsfNIT <- data.frame(predict(dmyNIT, newdata = data))
+data <- cbind(data, trsfNIT)
+data <- data %>% select(-NAME_INCOME_TYPE)
+
+# One-Hot-Encoding for NAME_EDUCATION_TYPE   
+dmyNET <- dummyVars(" ~ NAME_EDUCATION_TYPE", data = data)
+trsfNET <- data.frame(predict(dmyNET, newdata = data))
+data <- cbind(data, trsfNET)
+data <- data %>% select(-NAME_EDUCATION_TYPE)
+
+# One-Hot-Encoding for NAME_FAMILY_STATUS   
+dmyNFS <- dummyVars(" ~ NAME_FAMILY_STATUS", data = data)
+trsfNFS <- data.frame(predict(dmyNFS, newdata = data))
+data <- cbind(data, trsfNFS)
+data <- data %>% select(-NAME_FAMILY_STATUS)
+
+# One-Hot-Encoding for NAME_HOUSING_TYPE   
+dmyNHT <- dummyVars(" ~ NAME_HOUSING_TYPE", data = data)
+trsfNHT <- data.frame(predict(dmyNHT, newdata = data))
+data <- cbind(data, trsfNHT)
+data <- data %>% select(-NAME_HOUSING_TYPE)
+
+# Remove FLAG_MOBIL, it is always 1
+data <- data %>% select(-FLAG_MOBIL)
+
+# One-Hot-Encoding for FLAG_WORK_PHONE  
+# Not needed, already 1 or 0
+# dmyFWP <- dummyVars(" ~ FLAG_WORK_PHONE", data = data)
+# trsfFWP <- data.frame(predict(dmyFWP, newdata = data))
+# data <- cbind(data, trsfFWP)
+# data <- data %>% select(-FLAG_WORK_PHONE)
+
+# One-Hot-Encoding for FLAG_PHONE  
+# Not needed, already 1 or 0
+# dmyFP <- dummyVars(" ~ FLAG_PHONE", data = data)
+# trsfFP <- data.frame(predict(dmyFP, newdata = data))
+# data <- cbind(data, trsfFP)
+# data <- data %>% select(-FLAG_PHONE)
+
+# One-Hot-Encoding for FLAG_EMAIL 
+# Not needed, already 1 or 0
+# dmyFE <- dummyVars(" ~ FLAG_EMAIL", data = data)
+# trsfFE <- data.frame(predict(dmyFE, newdata = data))
+# data <- cbind(data, trsfFE)
+# data <- data %>% select(-FLAG_EMAIL)
+
+# One-Hot-Encoding for OCCUPATION_TYPE     
+dmyOT <- dummyVars(" ~ OCCUPATION_TYPE ", data = data)
+trsfOT <- data.frame(predict(dmyOT, newdata = data))
+data <- cbind(data, trsfOT)
+data <- data %>% select(-OCCUPATION_TYPE )
 
 summary(data)
+
+# Normalizing data
+preprocessParams <- preProcess(data$CNT_CHILDREN, method=c("center", "scale"))
+# summarize transform parameters
+print(preprocessParams)
+# transform the dataset using the parameters
+transformed <- predict(preprocessParams, iris[,1:4])
+
+mean <- apply(data, 2, mean)
+std <- apply(data, 2, sd)
+dataScaled <- scale(data$CNT_CHILDREN, center = mean, scale = std)
+
+summary(dataScaled)
 ```
 ##K-Fold-Validation
 ```{r}
