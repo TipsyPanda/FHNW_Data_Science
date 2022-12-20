@@ -112,12 +112,16 @@ summary(data)
 ```
 ##Cleanup
 ```{r}
+# Check for duplicates 
+sum(duplicated(data))
+# No duplicates
+
 data <- data %>% select(-ID)
 cols <- c("CODE_GENDER","FLAG_OWN_CAR","FLAG_OWN_REALTY","NAME_INCOME_TYPE","NAME_EDUCATION_TYPE", "NAME_FAMILY_STATUS", "NAME_HOUSING_TYPE","FLAG_MOBIL","FLAG_WORK_PHONE","FLAG_PHONE","FLAG_EMAIL", "OCCUPATION_TYPE","status")
 cols
 data[cols] <- lapply(data[cols],factor)
 
-summary(data)
+# summary(data)
 
 # One-Hot-Encoding for CODE_GENDER
 dmy <- dummyVars(" ~ CODE_GENDER", data = data)
@@ -143,11 +147,16 @@ trsfNIT <- data.frame(predict(dmyNIT, newdata = data))
 data <- cbind(data, trsfNIT)
 data <- data %>% select(-NAME_INCOME_TYPE)
 
-# One-Hot-Encoding for NAME_EDUCATION_TYPE   
-dmyNET <- dummyVars(" ~ NAME_EDUCATION_TYPE", data = data)
-trsfNET <- data.frame(predict(dmyNET, newdata = data))
-data <- cbind(data, trsfNET)
-data <- data %>% select(-NAME_EDUCATION_TYPE)
+# Factoring NAME_EDUCATION_TYPE as it is ordinal
+# unique(data$NAME_EDUCATION_TYPE)
+# "Secondary / secondary special", "Higher education", "Incomplete higher", "Lower secondary", "Academic degree"
+# Ranking:
+# 'Lower secondary', 'Secondary / secondary special', 'Incomplete higher', 'Higher education', 'Academic degree'
+data$NAME_EDUCATION_TYPE <- as.numeric(factor(data$NAME_EDUCATION_TYPE, order=TRUE, levels=c('Lower secondary', 'Secondary / secondary special', 'Incomplete higher', 'Higher education', 'Academic degree')))
+#dmyNET <- dummyVars(" ~ NAME_EDUCATION_TYPE", data = data)
+#trsfNET <- data.frame(predict(dmyNET, newdata = data))
+#data <- cbind(data, trsfNET)
+#data <- data %>% select(-NAME_EDUCATION_TYPE)
 
 # One-Hot-Encoding for NAME_FAMILY_STATUS   
 dmyNFS <- dummyVars(" ~ NAME_FAMILY_STATUS", data = data)
@@ -191,20 +200,34 @@ trsfOT <- data.frame(predict(dmyOT, newdata = data))
 data <- cbind(data, trsfOT)
 data <- data %>% select(-OCCUPATION_TYPE )
 
-summary(data)
+#summary(data)
 
-# Normalizing data
-preprocessParams <- preProcess(data$CNT_CHILDREN, method=c("center", "scale"))
+### Normalizing data
+
+## Does not work for single columns
+# preprocessParams <- preProcess(data$CNT_CHILDREN, method=c("center", "scale"))
 # summarize transform parameters
-print(preprocessParams)
+# print(preprocessParams)
 # transform the dataset using the parameters
-transformed <- predict(preprocessParams, iris[,1:4])
+# transformed <- predict(preprocessParams, iris[,1:4])
 
-mean <- apply(data, 2, mean)
-std <- apply(data, 2, sd)
-dataScaled <- scale(data$CNT_CHILDREN, center = mean, scale = std)
+## Does not work for single columns
+# mean <- apply(data, 2, mean)
+# std <- apply(data, 2, sd)
+# dataScaled <- scale(data$CNT_CHILDREN, center = mean, scale = std)
 
-summary(dataScaled)
+## Based on https://www.learnbymarketing.com/tutorials/neural-networks-in-r-tutorial/
+#Might not be needed if done in preprocessing 
+data$CNT_CHILDREN <- (data$CNT_CHILDREN-min(data$CNT_CHILDREN)) / (max(data$CNT_CHILDREN)-min(data$CNT_CHILDREN))
+data$DAYS_BIRTH <- (data$DAYS_BIRTH-min(data$DAYS_BIRTH)) / (max(data$DAYS_BIRTH)-min(data$DAYS_BIRTH))
+data$DAYS_EMPLOYED <- (data$DAYS_EMPLOYED-min(data$DAYS_EMPLOYED)) / (max(data$DAYS_EMPLOYED)-min(data$DAYS_EMPLOYED))
+data$CNT_FAM_MEMBERS <- (data$CNT_FAM_MEMBERS-min(data$CNT_FAM_MEMBERS)) / (max(data$CNT_FAM_MEMBERS)-min(data$CNT_FAM_MEMBERS))
+
+# ggplot(data = data, mapping = aes(x = ID, y = AMT_INCOME_TOTAL)) + geom_point()
+# heavily right skewed, but NN should not be affected by it
+data$AMT_INCOME_TOTAL <- (data$AMT_INCOME_TOTAL-min(data$AMT_INCOME_TOTAL)) / (max(data$AMT_INCOME_TOTAL)-min(data$AMT_INCOME_TOTAL))
+
+summary(data)
 ```
 ##K-Fold-Validation
 ```{r}
