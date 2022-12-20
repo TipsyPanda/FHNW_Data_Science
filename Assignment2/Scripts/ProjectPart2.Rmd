@@ -229,39 +229,50 @@ data$AMT_INCOME_TOTAL <- (data$AMT_INCOME_TOTAL-min(data$AMT_INCOME_TOTAL)) / (m
 
 summary(data)
 ```
+
+## Check data
+```{r}
+dim(data)
+sapply(data, class)
+levels(data$status)
+# summarize the class distribution
+percentage <- prop.table(table(data$status)) * 100
+cbind(freq=table(data$status), percentage=percentage)
+```
+
 ##K-Fold-Validation
 ```{r}
-   # 75% of the sample size
-  smp_size <- floor(0.75 * nrow(data))
+  #  # 75% of the sample size
+  # smp_size <- floor(0.75 * nrow(data))
+  # 
+  # # set the seed to make your partition reproducible
+  # set.seed(123)
+  # data_ind <- sample(seq_len(nrow(data)), size = smp_size)
+  # train <- as_tibble(data[data_ind, ])
+  # test <- as_tibble(data[-data_ind, ])
+  # 
+  # train_no_status <- select(train,-c(status))
+  # train_status <- select(train,c(status))
   
-  # set the seed to make your partition reproducible
-  set.seed(123)
-  data_ind <- sample(seq_len(nrow(data)), size = smp_size)
-  train <- as_tibble(data[data_ind, ])
-  test <- as_tibble(data[-data_ind, ])
-
-  train_no_status <- select(train,-c(status))
-  train_status <- select(train,c(status))
   
-  
-#define model
-build_model <- function() {
-  model <- keras_model_sequential() %>% 
-    layer_dense(units = 64, activation = "relu", 
-                input_shape = dim(train)[[2]]) %>% 
-    layer_dense(units = 64, activation = "relu") %>% 
-    layer_dense(units = 1) 
-    
-  model %>% compile(
-    optimizer = "rmsprop", 
-    loss = "mse", 
-    metrics = c("mae")
-  )
-}
+# #define model
+# build_model <- function() {
+#   model <- keras_model_sequential() %>% 
+#     layer_dense(units = 64, activation = "relu", 
+#                 input_shape = dim(train)[[2]]) %>% 
+#     layer_dense(units = 64, activation = "relu") %>% 
+#     layer_dense(units = 1) 
+#     
+#   model %>% compile(
+#     optimizer = "rmsprop", 
+#     loss = "mse", 
+#     metrics = c("mae")
+#   )
+# }
 
   
 k <- 10
-indices <- sample(1:nrow(train))
+indices <- sample(1:nrow(data))
 folds <- cut(indices, breaks = k, labels = FALSE)
 
 num_epochs <- 100
