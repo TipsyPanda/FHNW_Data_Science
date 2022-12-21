@@ -250,9 +250,9 @@ sapply(data, class)
 percentage <- prop.table(table(data$status)) * 100
 cbind(freq=table(data$status), percentage=percentage)
 
-# Try to create data matrix
-#dataset1 <- data
-#c(c(train_data, dataset1$status), c(test_data, test_targets)) %<-% dataset1
+# Turn data frame into data matrix
+matrix_data <- subset(data, select = -c(status))
+matrix_targets <- data.matrix(data$status)
 
 ```
 
@@ -323,9 +323,9 @@ all_scores <- c()
 build_model <- function() {
   model <- keras_model_sequential() %>%
     layer_dense(units = 64, activation = "relu",
-                input_shape = dim(data)[[2]]) %>%
+                input_shape = dim(matrix_data)[[2]]) %>%
     layer_dense(units = 64, activation = "relu") %>%
-    layer_dense(units = 1)
+    layer_dense(units = 1, activation = "sigmoid")
 
   model %>% compile(
     optimizer = "rmsprop",
@@ -334,13 +334,13 @@ build_model <- function() {
   )
 }
 
-mean <- apply(data, 2, mean)
-std <- apply(data, 2, sd)
-train_data <- scale(data, center = mean, scale = std)
-test_data <- scale(data, center = mean, scale = std)
+mean <- apply(matrix_data, 2, mean)
+std <- apply(matrix_data, 2, sd)
+train_data <- scale(matrix_data, center = mean, scale = std)
+test_data <- scale(matrix_data, center = mean, scale = std)
 
 k <- 10
-indices <- sample(1:nrow(data))
+indices <- sample(1:nrow(matrix_data))
 folds <- cut(indices, breaks = k, labels = FALSE)
 
 num_epochs <- 500
@@ -349,11 +349,11 @@ for (i in 1:k) {
   cat("processing fold #", i, "\n")
 
   val_indices <- which(folds == i, arr.ind = TRUE)
-  val_data <- subset(data[val_indices,], select = -c(status))
-  val_targets <- data$status[val_indices]
+  val_data <- matrix_data[val_indices,]
+  val_targets <- matrix_targets[val_indices]
 
-  partial_train_data <- subset(data[-val_indices,], select = -c(status))
-  partial_train_targets <- data$status[-val_indices]
+  partial_train_data <- matrix_data[-val_indices,]
+  partial_train_targets <- matrix_targets[-val_indices]
 
   model <- build_model()
 
@@ -366,6 +366,7 @@ for (i in 1:k) {
   all_mae_histories <- rbind(all_mae_histories, mae_history)
 }
 
+reticulate::py_last_error()
 
   
 ```
