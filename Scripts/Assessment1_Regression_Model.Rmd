@@ -1,6 +1,6 @@
 ---
-title: "Predictive analysis - MOBI24"
-author: "Group13"
+title: "Data Science - Regression Task"
+author: "Group1"
 date: "2022-12-09"
 output:
   pdf_document: 
@@ -18,9 +18,9 @@ knitr::opts_chunk$set(dev = 'png')
 
 \pagebreak
 
-# MOBI24 - Predict number of callers
+#Abstract
 
-A key information for the KPI «Service Level Assistance» discussed in part 1 is to know how many callers to expect in a given time frame. Therefore it was decided to build a predictive model with the goal to estimate the number of callers per hour to allow for more accurate resource planning.
+In this study, pre-cleaned data was further processed for training using one-hot encoding, removal of near zero variance variables, and scaling between 0 and 1. Initially, linear regression, random forest, and gradient boosting models were applied. For each model, several commonly used hyperparameters were utilized to obtain a preliminary assessment of performance. After determining that XGboost achieved the best results, the XGboost approach was selected for further optimization through hyperparameter tuning. The optimized XGboost model was trained on the training set using the optimal set of hyperparameters and evaluated using standard metrics (MSE, RMSE, MAE, RSQ). The fit of the model was also assessed through visualization.
 
 ```{r Load libraries and data, include=FALSE}
 library(tidyverse)
@@ -35,17 +35,9 @@ library(vip) #variable important plots
 options(java.parameters = "-Xmx16g")
 getwd()
 lcdata <- readRDS("../Data/Out/cleanData.rds")
-lcdata <- data.frame(lcdata %>% dplyr::select(int_rate, term, loan_amnt,dti_merged,term ,installment,home_ownership,purpose, revol_util,revol_bal))
-
+lcdata <- data.frame(lcdata %>% dplyr::select(int_rate,loan_amnt, term,installment,home_ownership, verification_status,purpose, annual_inc_merged, dti_merged, revol_util,revol_bal)) #region,mths_since_last_major_derog_cat,
 ```
 
-## Background on Mobi24 Dataset
-
-The Mobi 24 dataset is an extract from their 24/7 support hotline. For this use case the data was preprocessed in tableau prep builder. Key features of the dataset are the timestamp which was split into Month, Day and Hour. For each call there is the "int_rate" which will be used as the class attribute. It indicates how many callers have called in that hour. The list of calls has further been enriched with the information if the given day is a holiday (IsHoliday) and the average wait time in that timeframe (W_TOTAL_AVG_1h).
-
-```{r}
-summary(lcdata)
-```
 \pagebreak
 ## General preparation of the dataset for machine learning
 
@@ -56,7 +48,7 @@ As a first step the class attribute "int_rate" is analyzed in a boxplot:
 boxplot(lcdata$int_rate, main ="Boxplot with outliers")
 ```
 
-We see that there are a number of outlines at the upper end of the data. We remove them by removing the boxplot\$out column of the boxplot graph. The column \$out contains all data beyond the whiskers of the boxplot. It further shows that the class attribute is right skewed.This will be targeted by stratifying the sample data in a later step.
+It is observed that there are several outliers at the upper end of the data, which can be identified in the boxplot through the $out column. These outliers can be removed by eliminating the $out column from the boxplot. The analysis also reveals that the class attribute is skewed to the right, which will be addressed through stratified sampling in a later stage of the assesment
 
 ```{r}
 #remove outliers
@@ -69,7 +61,7 @@ lcdata[cols] <- lapply(lcdata[cols], factor)
 
 
 \pagebreak
-Summary of the dataset after initial cleaning steps:
+Summary of the data set after initial cleaning steps:
 
 ```{r Summary of dataset, echo=FALSE, warning=FALSE}
 hist1 <- ggplot(data.frame(int_rate=lcdata$int_rate), aes(x=int_rate)) + geom_histogram(binwidth = 30) 
@@ -91,7 +83,7 @@ testSet <- testing(trainIndex)
 
 ## Pre-process the data to be used with the models
 
-Since most predictive models work better with numeric features we apply one-hot encoding on the factor variables (transforming the variables to where each level has a column: `step_dummy()`), remove near zero variance predictors (`step_nzv()`, no predictor affected in this case) and normalize the predictors (`step_range()`to normalize between 0 and 1 as the average waiting time cannot be negative.).
+Since many predictive models perform better with numeric features, one-hot encoding is applied to the factor variables to transform them into a format where each level has its own column (using the step_dummy() function). Near zero variance predictors are also removed (using the step_nzv() function, although no predictors are affected in this case) and the predictors are normalized (using the step_range() function) to fall between 0 and 1, as the average waiting time cannot be negative. This process helps to improve the performance of the predictive models.
 
 ```{r Create a recipe for preproc}
 set.seed(12)
@@ -111,6 +103,10 @@ trainingSet_processed <- preprocRecipe %>%
 testSet_processed <- preprocRecipe %>%
   prep(testSet) %>%
   bake(testSet)
+
+write.csv(trainingSet_processed, "../Data/Out/trainingset.csv")
+write.csv(testSet_processed, "../Data/Out/testset.csv")
+
 ```
 
 We have now used the recipe steps to create fully processed training and test sets. We are ready to train machine learning algorithms.
@@ -157,12 +153,12 @@ Each of the defined models is now fit to the training data set.
 
 ```{r Fit models}
 lmFit <- fit(lmModel, int_rate ~ ., data = trainingSet_processed)
-# rfFit <- fit(rfModel, int_rate ~ ., data = trainingSet_processed)
-# saveRDS(rfFit, "../Data/Models/rfFit.rds")
+ rfFit <- fit(rfModel, int_rate ~ ., data = trainingSet_processed)
+saveRDS(rfFit, "../Data/Models/rfFit.rds")
 rfFit <- readRDS("../Data/Models/rfFit.rds")
-# xgFit <- fit(xgModel, int_rate ~ ., data = trainingSet_processed)
-# saveRDS(rfFit, "../Data/Models/xgFit.rds")
-rfFit <- readRDS("../Data/Models/xgFit.rds")
+xgFit <- fit(xgModel, int_rate ~ ., data = trainingSet_processed)
+saveRDS(xgFit, "../Data/Models/xgFit.rds")
+xgFit <- readRDS("../Data/Models/xgFit.rds")
 ```
 
 Let's look at the output:
@@ -206,9 +202,13 @@ xgClassWithPredictions <- testSet_processed %>%
 
 The `metric_set()` function from the "yardstick" package is used to define the metrics. For this project the following metrics have been chosen:
 
+-   mean squared error (MSE)
+
+    -   MSE is our main metric as MSE is sensitive to outliers. In regression tasks, it is important to consider the impact of outliers on the model performance. MSE gives more weight to larger errors, which makes          it more sensitive to outliers and can help identify issues with the model.
+
 -   root mean squared error (RMSE)
 
-    -   RMSE is our main metric as it puts a higher penalty on large errors. As we want to adjust our staffing according to the predicted calls a large offset would mean that we are either vastly over- or under staffed.
+    -   RMSE is our main metric as it puts a higher penalty on large errors. As we want to adjust our staffing according to the predicted calls a large offset would mean that we are either vastly over- or under             staffed.
 
 -   root squared error (RSQ)
 
@@ -384,8 +384,8 @@ final_xgb
 The final model is now fit with the training and testdata set. Below we cn see the individual metrics and the the Plot that shows the predicted class values vs. the real data. We can see that with an RMSE of 'r collect_metrics(final_res)' and the plot that shows very little variance we are in a good spot with our model. The only negative thing that stands out is
 
 ```{r final fit}
-#final_res <- last_fit(final_xgb, trainIndex, metrics=metricSet)
-#saveRDS(final_res, "../Data/Models/final_res.rds")
+final_res <- last_fit(final_xgb, trainIndex, metrics=metricSet)
+saveRDS(final_res, "../Data/Models/final_res.rds")
 final_res <- readRDS("../Data/Models/final_res.rds")
 ```
 
@@ -461,7 +461,7 @@ all_predictions %>%
   dplyr::filter(type=="test")%>% 
   ggplot(aes(term, AE)) +
   geom_point()  +
-  ggtitle("Aboslute error per hour of the day")
+  ggtitle("Aboslute error per term")
 
 ```
 
@@ -494,6 +494,34 @@ If we now compare the metrics for the model during day time hours (07:00 -19:00)
 knitr::kable(list(caption = "train",t1, "test", t2) ,caption = "Metrics comparison" )
 
 ```
+
+FOr the assigment we also need to calculate the MSE. This metric is not offered by yardstick so we have to calcualte it ourselves:
+```{r}
+m1 <- all_predictions %>%
+  filter( type =="test")%>%
+  group_by(type)
+
+m2 <- all_predictions %>%
+  filter( type =="train")%>%
+  group_by(type)
+
+
+mse <- function(predictions, actual) {
+  diff <- predictions - actual
+  squared_diff <- diff^2
+  mean_squared_error <- mean(squared_diff)
+  return(mean_squared_error)
+}
+
+mse_test <- mse(m1$.pred,m1$int_rate)
+mse_train <- mse(m2$.pred,m2$int_rate)
+
+
+
+
+```
+
+
 
 ##Making predictions with the model
 
