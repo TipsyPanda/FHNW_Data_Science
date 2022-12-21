@@ -250,6 +250,10 @@ sapply(data, class)
 percentage <- prop.table(table(data$status)) * 100
 cbind(freq=table(data$status), percentage=percentage)
 
+# Try to create data matrix
+#dataset1 <- data
+#c(c(train_data, dataset1$status), c(test_data, test_targets)) %<-% dataset1
+
 ```
 
 ##K-Fold-Validation
@@ -345,11 +349,11 @@ for (i in 1:k) {
   cat("processing fold #", i, "\n")
 
   val_indices <- which(folds == i, arr.ind = TRUE)
-  val_data <- data[val_indices,]
-  val_targets <- data[val_indices]
+  val_data <- subset(data[val_indices,], select = -c(status))
+  val_targets <- data$status[val_indices]
 
-  partial_train_data <- data[-val_indices,]
-  partial_train_targets <- data[-val_indices]
+  partial_train_data <- subset(data[-val_indices,], select = -c(status))
+  partial_train_targets <- data$status[-val_indices]
 
   model <- build_model()
 
