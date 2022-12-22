@@ -194,7 +194,11 @@ data <- data %>% select(-FLAG_MOBIL)
 # data <- cbind(data, trsfFE)
 # data <- data %>% select(-FLAG_EMAIL)
 
-# One-Hot-Encoding for OCCUPATION_TYPE     
+# One-Hot-Encoding for OCCUPATION_TYPE
+#data$OCCUPATION_TYPE
+#levels(data$OCCUPATION_TYPE)
+levels(data$OCCUPATION_TYPE) <- c(levels(data$OCCUPATION_TYPE), "N/A")
+data$OCCUPATION_TYPE[is.na(data$OCCUPATION_TYPE)] <- "N/A"
 dmyOT <- dummyVars(" ~ OCCUPATION_TYPE ", data = data)
 trsfOT <- data.frame(predict(dmyOT, newdata = data))
 data <- cbind(data, trsfOT)
@@ -216,12 +220,12 @@ data <- data %>% select(-OCCUPATION_TYPE )
 # std <- apply(data, 2, sd)
 # dataScaled <- scale(data$CNT_CHILDREN, center = mean, scale = std)
 
-## Based on https://www.learnbymarketing.com/tutorials/neural-networks-in-r-tutorial/
-#Might not be needed if done in preprocessing 
-data$CNT_CHILDREN <- (data$CNT_CHILDREN-min(data$CNT_CHILDREN)) / (max(data$CNT_CHILDREN)-min(data$CNT_CHILDREN))
-data$DAYS_BIRTH <- (data$DAYS_BIRTH-min(data$DAYS_BIRTH)) / (max(data$DAYS_BIRTH)-min(data$DAYS_BIRTH))
-data$DAYS_EMPLOYED <- (data$DAYS_EMPLOYED-min(data$DAYS_EMPLOYED)) / (max(data$DAYS_EMPLOYED)-min(data$DAYS_EMPLOYED))
-data$CNT_FAM_MEMBERS <- (data$CNT_FAM_MEMBERS-min(data$CNT_FAM_MEMBERS)) / (max(data$CNT_FAM_MEMBERS)-min(data$CNT_FAM_MEMBERS))
+# ## Based on https://www.learnbymarketing.com/tutorials/neural-networks-in-r-tutorial/
+# #Might not be needed if done in preprocessing 
+# data$CNT_CHILDREN <- (data$CNT_CHILDREN-min(data$CNT_CHILDREN)) / (max(data$CNT_CHILDREN)-min(data$CNT_CHILDREN))
+# data$DAYS_BIRTH <- (data$DAYS_BIRTH-min(data$DAYS_BIRTH)) / (max(data$DAYS_BIRTH)-min(data$DAYS_BIRTH))
+# data$DAYS_EMPLOYED <- (data$DAYS_EMPLOYED-min(data$DAYS_EMPLOYED)) / (max(data$DAYS_EMPLOYED)-min(data$DAYS_EMPLOYED))
+# data$CNT_FAM_MEMBERS <- (data$CNT_FAM_MEMBERS-min(data$CNT_FAM_MEMBERS)) / (max(data$CNT_FAM_MEMBERS)-min(data$CNT_FAM_MEMBERS))
 
 # ggplot(data = data, mapping = aes(x = ID, y = AMT_INCOME_TOTAL)) + geom_point()
 # heavily right skewed, but NN should not be affected by it
@@ -252,8 +256,12 @@ cbind(freq=table(data$status), percentage=percentage)
 
 # Turn data frame into data matrix
 matrix_data <- subset(data, select = -c(status))
+#matrix_data <- subset(data, select = c(CNT_CHILDREN, AMT_INCOME_TOTAL))
 matrix_targets <- data.matrix(data$status)
 
+#Subset only 100 entries for testing
+matrix_data <- matrix_data[1:100, ]
+matrix_targets <- matrix_targets[1:100, ]
 ```
 
 ##K-Fold-Validation
@@ -286,37 +294,37 @@ matrix_targets <- data.matrix(data$status)
 #   )
 # }
 
-  
-k <- 10
-indices <- sample(1:nrow(data))
-folds <- cut(indices, breaks = k, labels = FALSE)
-
-num_epochs <- 100
-all_scores <- c()
-
- for (i in 1:k) {
-
-  # Prepare the validation data: data from partition # k
-  val_indices <- which(folds == i, arr.ind = TRUE)
-  val_data <- data[val_indices,]
-  #val_targets <- train_status[val_indices,]
-
-   # Prepare the training data: data from all other partitions
-  partial_train_data <- train_no_status[-val_indices,]
-  #partial_train_targets <- train_status[-val_indices,]
-
-  #train & eval model
-  #model <- build_model()
-
-
-  #model %>% fit(partial_train_data, partial_train_targets,
-  #              epochs = num_epochs, batch_size = 1, verbose = 0)
-
-  #validate
-  #results <- model %>% evaluate(val_data, val_targets, verbose = 0)
-
-  #all_scores <- c(all_scores, results["mae"])
- }
+#   
+# k <- 10
+# indices <- sample(1:nrow(data))
+# folds <- cut(indices, breaks = k, labels = FALSE)
+# 
+# num_epochs <- 100
+# all_scores <- c()
+# 
+#  for (i in 1:k) {
+# 
+#   # Prepare the validation data: data from partition # k
+#   val_indices <- which(folds == i, arr.ind = TRUE)
+#   val_data <- data[val_indices,]
+#   #val_targets <- train_status[val_indices,]
+# 
+#    # Prepare the training data: data from all other partitions
+#   partial_train_data <- train_no_status[-val_indices,]
+#   #partial_train_targets <- train_status[-val_indices,]
+# 
+#   #train & eval model
+#   #model <- build_model()
+# 
+# 
+#   #model %>% fit(partial_train_data, partial_train_targets,
+#   #              epochs = num_epochs, batch_size = 1, verbose = 0)
+# 
+#   #validate
+#   #results <- model %>% evaluate(val_data, val_targets, verbose = 0)
+# 
+#   #all_scores <- c(all_scores, results["mae"])
+#  }
   
   #Karsten's try
 # Function to build the model
@@ -338,9 +346,10 @@ mean <- apply(matrix_data, 2, mean)
 std <- apply(matrix_data, 2, sd)
 train_data <- scale(matrix_data, center = mean, scale = std)
 test_data <- scale(matrix_data, center = mean, scale = std)
+train_targets <- matrix_targets
 
 k <- 10
-indices <- sample(1:nrow(matrix_data))
+indices <- sample(1:nrow(train_data))
 folds <- cut(indices, breaks = k, labels = FALSE)
 
 num_epochs <- 500
@@ -349,11 +358,11 @@ for (i in 1:k) {
   cat("processing fold #", i, "\n")
 
   val_indices <- which(folds == i, arr.ind = TRUE)
-  val_data <- matrix_data[val_indices,]
-  val_targets <- matrix_targets[val_indices]
+  val_data <- train_data[val_indices,]
+  val_targets <- train_targets[val_indices]
 
-  partial_train_data <- matrix_data[-val_indices,]
-  partial_train_targets <- matrix_targets[-val_indices]
+  partial_train_data <- train_data[-val_indices,]
+  partial_train_targets <- train_targets[-val_indices]
 
   model <- build_model()
 
@@ -366,7 +375,7 @@ for (i in 1:k) {
   all_mae_histories <- rbind(all_mae_histories, mae_history)
 }
 
-reticulate::py_last_error()
+#reticulate::py_last_error()
 
   
 ```
