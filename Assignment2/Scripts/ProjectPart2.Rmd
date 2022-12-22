@@ -100,13 +100,14 @@ library(ggplot2)
 library(dplyr)
 library(tensorflow)
 library(tfdatasets)
+library(tidymodels)
 library(keras)
 library(caret)
 #LOAD DATA
 setwd(getwd())
 dataIn = "../Data/Dataset-part-2.csv"
 data_in <- read.csv(dataIn,header = TRUE, sep =',')
-View(data_in)
+#View(data_in)
 data <- data.frame(data_in)
 summary(data)
 ```
@@ -116,12 +117,46 @@ summary(data)
 sum(duplicated(data))
 # No duplicates
 
-data <- data %>% select(-ID)
-cols <- c("CODE_GENDER","FLAG_OWN_CAR","FLAG_OWN_REALTY","NAME_INCOME_TYPE","NAME_EDUCATION_TYPE", "NAME_FAMILY_STATUS", "NAME_HOUSING_TYPE","FLAG_MOBIL","FLAG_WORK_PHONE","FLAG_PHONE","FLAG_EMAIL", "OCCUPATION_TYPE","status")
+#Remove ID (irrelevant) and FLAG_MOBIL (always 1)
+data <- data %>% select(-ID, -FLAG_MOBIL)
+cols <- c("CODE_GENDER","FLAG_OWN_CAR","FLAG_OWN_REALTY","NAME_INCOME_TYPE","NAME_EDUCATION_TYPE", "NAME_FAMILY_STATUS", "NAME_HOUSING_TYPE","FLAG_WORK_PHONE","FLAG_PHONE","FLAG_EMAIL", "OCCUPATION_TYPE","status")
 cols
 data[cols] <- lapply(data[cols],factor)
 
-# summary(data)
+# Replacing empty values with "Unknown"
+levels(data$OCCUPATION_TYPE) <- c(levels(data$OCCUPATION_TYPE), "Unknown")
+data$OCCUPATION_TYPE[is.na(data$OCCUPATION_TYPE)] <- "Unknown"
+
+summary(data)
+```
+
+# Preprocessing
+```{r Create a recipe for preproc}
+set.seed(713)
+trainIndex <- initial_split(data, prop = 0.8, strata = status) 
+trainingSet <- training(trainIndex)
+testSet <- testing(trainIndex)
+
+set.seed(12)
+preprocRecipe <-
+  recipe(status ~., data = trainingSet) %>%
+  step_dummy(all_nominal()) %>%
+  step_range(all_predictors(), -all_nominal(), min = 0, max = 1)
+```
+
+# In this step the above defined receipt is extracted using the `prep()` function, and then use the `bake()` function to transform a set of data based on that recipe.
+```{r Prep and bake the defined recipe}
+trainingSet_processed <- preprocRecipe %>%
+  prep(trainingSet) %>%
+  bake(trainingSet)
+testSet_processed <- preprocRecipe %>%
+  prep(testSet) %>%
+  bake(testSet)
+
+```
+
+#OneHotEncoding
+```{r}
 
 # One-Hot-Encoding for CODE_GENDER
 dmy <- dummyVars(" ~ CODE_GENDER", data = data)
@@ -171,7 +206,7 @@ data <- cbind(data, trsfNHT)
 data <- data %>% select(-NAME_HOUSING_TYPE)
 
 # Remove FLAG_MOBIL, it is always 1
-data <- data %>% select(-FLAG_MOBIL)
+#data <- data %>% select(-FLAG_MOBIL)
 
 # One-Hot-Encoding for FLAG_WORK_PHONE  
 # Not needed, already 1 or 0
@@ -197,8 +232,8 @@ data <- data %>% select(-FLAG_MOBIL)
 # One-Hot-Encoding for OCCUPATION_TYPE
 #data$OCCUPATION_TYPE
 #levels(data$OCCUPATION_TYPE)
-levels(data$OCCUPATION_TYPE) <- c(levels(data$OCCUPATION_TYPE), "N/A")
-data$OCCUPATION_TYPE[is.na(data$OCCUPATION_TYPE)] <- "N/A"
+levels(data$OCCUPATION_TYPE) <- c(levels(data$OCCUPATION_TYPE), "Unknown")
+data$OCCUPATION_TYPE[is.na(data$OCCUPATION_TYPE)] <- "Unknown"
 dmyOT <- dummyVars(" ~ OCCUPATION_TYPE ", data = data)
 trsfOT <- data.frame(predict(dmyOT, newdata = data))
 data <- cbind(data, trsfOT)
@@ -229,7 +264,7 @@ data <- data %>% select(-OCCUPATION_TYPE )
 
 # ggplot(data = data, mapping = aes(x = ID, y = AMT_INCOME_TOTAL)) + geom_point()
 # heavily right skewed, but NN should not be affected by it
-data$AMT_INCOME_TOTAL <- (data$AMT_INCOME_TOTAL-min(data$AMT_INCOME_TOTAL)) / (max(data$AMT_INCOME_TOTAL)-min(data$AMT_INCOME_TOTAL))
+#data$AMT_INCOME_TOTAL <- (data$AMT_INCOME_TOTAL-min(data$AMT_INCOME_TOTAL)) / (max(data$AMT_INCOME_TOTAL)-min(data$AMT_INCOME_TOTAL))
 
 summary(data)
 ```
@@ -255,9 +290,10 @@ percentage <- prop.table(table(data$status)) * 100
 cbind(freq=table(data$status), percentage=percentage)
 
 # Turn data frame into data matrix
-matrix_data <- subset(data, select = -c(status))
+matrix_data <- trainingSet_processed %>% select(-tail(names(trainingSet_processed), 7))
 #matrix_data <- subset(data, select = c(CNT_CHILDREN, AMT_INCOME_TOTAL))
-matrix_targets <- data.matrix(data$status)
+#matrix_targets <- data.matrix(trainingSet_processed[])
+matrix_targets <- trainingSet_processed %>% select(tail(names(trainingSet_processed), 7))
 
 #Subset only 100 entries for testing
 matrix_data <- matrix_data[1:100, ]
@@ -333,19 +369,23 @@ build_model <- function() {
     layer_dense(units = 64, activation = "relu",
                 input_shape = dim(matrix_data)[[2]]) %>%
     layer_dense(units = 64, activation = "relu") %>%
-    layer_dense(units = 1, activation = "sigmoid")
+    layer_dense(units = 7, activation = "sigmoid")
 
   model %>% compile(
     optimizer = "rmsprop",
-    loss = "mse",
+    loss = "categorical_crossentropy",
     metrics = c("mae")
   )
 }
 
-mean <- apply(matrix_data, 2, mean)
-std <- apply(matrix_data, 2, sd)
-train_data <- scale(matrix_data, center = mean, scale = std)
-test_data <- scale(matrix_data, center = mean, scale = std)
+# mean <- apply(matrix_data, 2, mean)
+# std <- apply(matrix_data, 2, sd)
+# train_data <- scale(matrix_data, center = mean, scale = std)
+# test_data <- scale(matrix_data, center = mean, scale = std)
+# train_targets <- matrix_targets
+
+train_data <- matrix_data
+test_data <- matrix_data
 train_targets <- matrix_targets
 
 k <- 10
@@ -366,18 +406,27 @@ for (i in 1:k) {
 
   model <- build_model()
 
+  # Train the model (in silent mode, verbose=0)
   history <- model %>% fit(
     partial_train_data, partial_train_targets,
     validation_data = list(val_data, val_targets),
-    epochs = num_epochs, batch_size = 1, verbose = 0
+    epochs = num_epochs, batch_size = 1, verbose = 1
   )
-  mae_history <- history$metrics$val_mean_absolute_error
+  mae_history <- history$metrics$val_mae
   all_mae_histories <- rbind(all_mae_histories, mae_history)
 }
 
-#reticulate::py_last_error()
 
-  
+#reticulate::py_last_error()
+```
+
+#We can then compute the average of the per-epoch MAE scores for all folds:
+
+```{r}
+average_mae_history <- data.frame(
+  epoch = seq(1:ncol(all_mae_histories)),
+  validation_mae = apply(all_mae_histories, 2, mean)
+)
 ```
 
 ```{r}
