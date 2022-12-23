@@ -18,9 +18,17 @@ knitr::opts_chunk$set(dev = 'png')
 
 \pagebreak
 
-#Abstract
+# Abstract
 
-In this study, pre-cleaned data was further processed for training using one-hot encoding, removal of near zero variance variables, and scaling between 0 and 1. Initially, linear regression, random forest, and gradient boosting models were applied. For each model, several commonly used hyperparameters were utilized to obtain a preliminary assessment of performance. After determining that XGboost achieved the best results, the XGboost approach was selected for further optimization through hyperparameter tuning. The optimized XGboost model was trained on the training set using the optimal set of hyperparameters and evaluated using standard metrics (MSE, RMSE, MAE, RSQ). The fit of the model was also assessed through visualization.
+In this study, pre-cleaned data was further processed for training using one-hot encoding, removal of near zero variance variables, and scaling between 0 and 1. \
+\
+Initially, linear regression, random forest, and gradient boosting models were applied. For each model, several commonly used hyperparameters were utilized to obtain a preliminary assessment of performance. After determining that XGboost achieved the best results, the XGboost approach was selected for further optimization through hyperparameter tuning. \
+\
+The optimized XGboost model was trained on the training set using the optimal set of hyperparameters and evaluated using standard metrics (MSE, RMSE, MAE, RSQ). The fit of the model was also assessed through visualization. \
+\
+Based on the results of the assignment, it can be concluded that the model is a viable solution for the prediction of the interest rate. However, several potential areas for future optimizations have been identified. These may include optimizing model hyperparameters, incorporating additional data or features, and experimenting with alternative model architectures. Additionally, it may be beneficial to perform a thorough error analysis to identify specific areas where the model is underestimating the interest rate and prioritize efforts to address these issues. By implementing these recommendations, it is hoped that the model will continue to evolve and improve its performance.
+
+\pagebreak
 
 ```{r Load libraries and data, include=FALSE}
 library(tidyverse)
@@ -37,11 +45,9 @@ getwd()
 lcdata <- data.frame(readRDS("../Data/Out/cleanData.rds"))
 ```
 
-\pagebreak
-
 ## General preparation of the dataset for machine learning
 
-As a first step the class attribute "int_rate" is analyzed in a boxplot:
+To begin the analysis, a boxplot of the "int_rate" class attribute can be created. This will allow for the visualization of the distribution of values within the attribute, including the minimum and maximum values, the median, and the upper and lower quartiles. This can provide valuable insights into the range and distribution of values within the attribute, as well as identify any potential outliers or anomalies.
 
 ```{r echo=FALSE}
 #Check Boxplot and histogram
@@ -61,17 +67,17 @@ lcdata[cols] <- lapply(lcdata[cols], factor)
 
 \pagebreak
 
-Summary of the data set after initial cleaning steps:
+A summary of the data set after initial cleaning steps:
 
 ```{r Summary of dataset, echo=FALSE, warning=FALSE}
-hist1 <- ggplot(data.frame(int_rate=lcdata$int_rate), aes(x=int_rate)) + geom_histogram(binwidth = 30)
+hist1 <- ggplot(data.frame(int_rate=lcdata$int_rate), aes(x=int_rate)) + geom_histogram(binwidth = 3)
 boxp1 <- ggplot(data.frame(int_rate=lcdata$int_rate), aes(y=int_rate)) + geom_boxplot()
 grid.arrange(hist1,boxp1, ncol = 2, top = "Distribution of the class variable int_rate")
 ```
 
 ## Create a training and a test set
 
-We use the initial_split(), training() and testing() functions to split our data into a training set and a test set using a 80/20 distribution. This is done so we can directly validate our trained model on the test data.
+In order to evaluate the performance of our model, we utilize the initial_split(), training(), and testing() functions to partition our data into a training set and a test set using an 80/20 ratio. The training set is used to fit the model, while the test set is used to validate the model's ability to generalize to unseen data. This process, known as train-test split, allows us to assess the model's performance on a held-out portion of the data.
 
 ```{r Partition data into training and test sets}
 set.seed(1)
@@ -94,7 +100,7 @@ preprocRecipe <-
   step_range(all_predictors(), -all_nominal(), min = 0, max = 1)
 ```
 
-In this step the above defined receipt is extracted using the `prep()` function, and then use the `bake()` function to transform a set of data based on that recipe.
+In this process, we first utilize the prep() function to extract a recipe that defines the steps for data transformation. We then use the bake() function to apply this recipe to a given set of data, effectively transforming the data according to the specified steps.
 
 ```{r Prep and bake the defined recipe}
 trainingSet_processed <- preprocRecipe %>%
@@ -113,15 +119,15 @@ We have now used the recipe steps to create fully processed training and test se
 
 ## Create different regression models to compare
 
-The class variable "int_rate" is numeric and therefore considered a regression task. To get an idea which type of model is worth further investigation three models were chosen for a first iteration:
+For the given regression task, three different machine learning models have been selected for exploration:
 
--   multiple linear regression
+-   **multiple linear regression:** Multiple linear regression is a widely used model for regression tasks, as it is simple to implement and can be used to model the relationship between a continuous response variable and one or more explanatory variables.
 
--   Random Forest (bagging)
+-   **Random Forest (bagging):** Random forest is an ensemble method that combines the predictions of multiple decision trees to make a final prediction. It is known to be robust and can handle a large number of features, making it a strong choice for regression tasks.
 
--   Gradient boosted decision trees (gradient boosting)
+-   **Gradient boosted decision trees (gradient boosting):** another ensemble method, use the idea of boosting to improve the performance of decision trees. It is a powerful method for regression tasks and has been shown to achieve strong results in many applications.
 
-For the initial setup a set of default parameters are taken that are known to be a good starting point for various data sets.
+To evaluate the performance of these models, the default parameters for each model will be used as a starting point. This will allow for an initial comparison of the models' performance and provide a baseline for further optimization if necessary.
 
 ```{r Specify models}
 lmModel <-
@@ -346,7 +352,7 @@ xgb_res <- readRDS("../Data/Models/xgb_res.rds")
 m <- collect_metrics(xgb_res)
 ```
 
-The following visualization illustrates the results of the tuning grid runs. The Y-axis represents the root mean squared error (RMSE) and the X-axis shows the values of the tuned hyperparameter. It can be observed that increasing the learning rate leads to a reduction in RMSE. No clear correlation is evident for the other hyperparameters. There are a few notable data points, such as the min_n at 10 and 30. Increasing the size of the tuning grid may reveal more patterns in the data. 
+The following visualization illustrates the results of the tuning grid runs. The Y-axis represents the root mean squared error (RMSE) and the X-axis shows the values of the tuned hyperparameter. It can be observed that increasing the learning rate leads to a reduction in RMSE. No clear correlation is evident for the other hyperparameters. There are a few notable data points, such as the min_n at 10 and 30. Increasing the size of the tuning grid may reveal more patterns in the data.
 
 ```{r results}
 xgb_res %>%
@@ -364,6 +370,7 @@ xgb_res %>%
 ```
 
 Since root mean squared error (RMSE) was chosen as the primary evaluation metric, the model with the lowest RMSE value will be selected as the best model. This model will then be saved for future use.
+
 ```{r best rmse, include=FALSE}
 knitr::kable(show_best(xgb_res, "rmse"))
 best_rmse <- select_best(xgb_res, "rmse")
@@ -380,11 +387,11 @@ final_xgb <- finalize_workflow(
 final_xgb
 ```
 
-The final model has now been fit to the training and test data sets. The spplit rate was adjusted to 95% training data in order to get the best fit possible. 
+The final model has now been fit to the training and test data sets. The split rate was adjusted to 95% training data in order to get the best fit possible. Further the stratification was removed to have a more accurate predictive results on the test data.
 
 ```{r final fit}
 set.seed(33)
-trainIndex2 <- initial_split(lcdata, prop = 0.95, strata = int_rate)
+trainIndex2 <- initial_split(lcdata, prop = 0.95)
 #final_res <- last_fit(final_xgb, trainIndex2, metrics=metricSet)
 #saveRDS(final_res, "../Data/Models/final_res.rds")
 final_res <- readRDS("../Data/Models/final_res.rds")
@@ -426,6 +433,7 @@ all_predictions %>%
 ```
 
 We also take a look at the variable improtance as well as the improvment with training iterations:
+
 ```{r}
 v1 <-extract_fit_parsnip(final_res) %>%
 vip(geom = "point", aesthetics = list(color = "blue", size = 1.5))+ ggtitle("Variable Importance")
@@ -436,6 +444,7 @@ data_mod <- data.frame(Iteration = fit$fit$evaluation_log$iter,
 v2 <- ggplot(data_mod, aes(x=Iteration, y=RMSE)) + geom_line() + ggtitle("RMSE improvement over iterations")
 grid.arrange(v1,v2)
 ```
+
 We can see that this error is very pronounced on Mondays, Tuesdays and Fridays. Further we can see that on weekends we can expect less calls in general.
 
 ```{r plot plot fit per weekday, echo=FALSE, warning=FALSE}
@@ -516,11 +525,15 @@ knitr::kable(list(caption = "train",t1, "test", t2) ,caption = "Metrics comparis
 
 ```
 
+\pagebreak
+
 ## Verdict and next steps
 
 The presented model can predict the interest rate with a reasonable level of accuracy but tends underestimate a bit escpecially on higher interest rates. To further improve the model the following options are available:
 
 -   Use more source data.
+
+-   Include and experiment with additional features in the model. Especially if they can be linked with the understimation of datapoints.
 
 -   Explore other types of models in more detail: Random Forest, Neural networks etc.
 
