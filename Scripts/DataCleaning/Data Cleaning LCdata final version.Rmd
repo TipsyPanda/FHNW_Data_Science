@@ -8,6 +8,7 @@ editor_options:
   markdown: 
     wrap: 72
 ---
+#Assigment 1: Data Cleaning
 
 ```{r}
 getwd()
@@ -440,8 +441,9 @@ ggplot(data = cleaning, mapping = aes(x=int_rate,y=purpose))+geom_boxplot()
 ```
 
 
-
+Make the final selection of attributes to consider for the model training and save the result to a file.
 ```{r}
+cleaning <- data.frame(cleaning %>% dplyr::select(int_rate,loan_amnt, term,installment,home_ownership, verification_status,purpose, annual_inc_merged, dti_merged, revol_util,revol_bal)) 
 saveRDS(cleaning, "../../Data/Out/cleanData.rds")
 ```
 

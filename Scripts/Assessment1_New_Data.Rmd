@@ -1,0 +1,185 @@
+```{r include=FALSE}
+getwd()
+cleaning <- read.csv("../Data/New_Data.csv", row.names=NULL,sep = ";" )
+which(is.na(cleaning$annual_inc)== TRUE)
+
+library(dplyr)
+
+cleaning <- cleaning %>% 
+  filter(!(is.na(annual_inc))) %>% 
+    filter(!(is.na(delinq_2yrs)))%>% 
+      filter(!(is.na(revol_bal))) %>% 
+        filter(!(is.na(revol_util))) %>% 
+          filter(!(is.na(collections_12_mths_ex_med))) %>% 
+  
+select( -id, -member_id, -title, -emp_title, -loan_status, -funded_amnt, -funded_amnt_inv, -loan_status, -pymnt_plan, -url, -desc, -total_pymnt, -total_pymnt_inv, -recoveries, -total_rec_prncp, -total_rec_int, -total_rec_late_fee,-collection_recovery_fee, -last_pymnt_d, -last_pymnt_amnt, -next_pymnt_d, -last_credit_pull_d,) %>% 
+  
+  mutate(
+    mths_since_delinq_cat = ifelse(is.na(mths_since_last_delinq)== TRUE,"No_delinq", 
+                                ifelse(mths_since_last_delinq <= 12, "recent", 
+                                   ifelse(mths_since_last_delinq <= 36, "1_to_3_years",
+                                          ifelse(mths_since_last_delinq <= 60,     "3_to_5_years","more_than_5_years")))) 
+    
+  ) %>% select(-mths_since_last_delinq) 
+          
+cleaning$mths_since_delinq_cat <- as.factor(cleaning$mths_since_delinq_cat) 
+cleaning <- cleaning %>% mutate(mths_since_last_record = ifelse(is.na(mths_since_last_record), 0, mths_since_last_record))
+
+cleaning <- cleaning %>%
+  mutate(mths_since_last_record_cat = ifelse(mths_since_last_record== 0,"No_record", 
+                                ifelse(mths_since_last_record <= 12, "recent", 
+                                   ifelse(mths_since_last_record <= 36, "1_to_3_years",
+                                          ifelse(mths_since_last_record <= 60,     "3_to_5_years","more_than_5_years")))))  %>% select(-mths_since_last_record)
+  
+cleaning$mths_since_last_record_cat <- as.factor(cleaning$mths_since_last_record_cat) 
+#Cleaning mths_since_last_major_derog
+cleaning <- cleaning %>% mutate(
+    mths_since_last_major_derog_cat = ifelse(is.na(mths_since_last_major_derog)== TRUE,"No_derog", 
+                                ifelse(mths_since_last_major_derog <= 12, "recent", 
+                                   ifelse(mths_since_last_major_derog <= 36, "1_to_3_years",
+                                          ifelse(mths_since_last_major_derog <= 60,     "3_to_5_years","more_than_5_years")))) 
+    
+  ) %>% select(-mths_since_last_major_derog)
+
+cleaning$mths_since_last_major_derog_cat <- as.factor(cleaning$mths_since_last_major_derog_cat) 
+#merging annual income
+cleaning <- cleaning %>% mutate(
+    annual_inc_merged = ifelse(is.na(annual_inc_joint)== TRUE, annual_inc,annual_inc_joint)) 
+
+cleaning <- cleaning %>% select(-annual_inc,-annual_inc_joint)
+
+
+#merging debt to income ratio
+cleaning <- cleaning %>% mutate(
+    dti_merged = ifelse(is.na(dti_joint)== TRUE, dti,dti_joint)) 
+
+cleaning <- cleaning %>% select(-dti,-dti_joint)
+#Cleaning tot_coll_amt
+cleaning <- cleaning %>% mutate(
+    tot_coll_amt = ifelse(is.na(tot_coll_amt)== TRUE,0, tot_coll_amt))
+#Cleaning tot_cur_bal
+cleaning <- cleaning %>% mutate(
+    tot_cur_bal = ifelse(is.na(tot_cur_bal)== TRUE,0, tot_cur_bal))
+cleaning <- cleaning %>%                                                mutate(
+    open_acc_6m = ifelse(is.na(open_acc_6m)== TRUE,0, open_acc_6m)) %>% mutate(
+    open_il_6m = ifelse(is.na(open_il_6m)== TRUE,0, open_il_6m))   %>% mutate(
+    open_il_12m = ifelse(is.na(open_il_12m)== TRUE,0, open_il_12m)) %>% mutate( 
+    open_il_24m = ifelse(is.na(open_il_24m)== TRUE,0, open_il_24m)) %>% mutate( 
+    mths_since_rcnt_il = ifelse(is.na(mths_since_rcnt_il)== TRUE,0, mths_since_rcnt_il)) %>% mutate( 
+    total_bal_il = ifelse(is.na(total_bal_il)== TRUE,0, total_bal_il)) %>% mutate( 
+    il_util = ifelse(is.na(il_util)== TRUE,0, il_util)) %>% mutate( 
+    open_rv_12m = ifelse(is.na(open_rv_12m)== TRUE,0, open_rv_12m)) %>% mutate( 
+    total_rev_hi_lim = ifelse(is.na(total_rev_hi_lim)== TRUE,0, total_rev_hi_lim)) %>% mutate( 
+    max_bal_bc = ifelse(is.na(max_bal_bc)== TRUE,0, max_bal_bc)) %>% mutate( 
+    all_util = ifelse(is.na(all_util)== TRUE,0, all_util)) %>% mutate( 
+    inq_fi = ifelse(is.na(inq_fi)== TRUE,0, inq_fi)) %>% mutate( 
+    total_cu_tl = ifelse(is.na(total_cu_tl)== TRUE,0, total_cu_tl)) %>% mutate( 
+    inq_last_12m = ifelse(is.na(inq_last_12m)== TRUE,0, inq_last_12m)) %>% mutate( 
+    open_rv_24m = ifelse(is.na(open_rv_24m)== TRUE,0, open_rv_24m)) 
+
+cleaning$verification_status <- as.factor(cleaning$verification_status)
+cleaning$verification_status_joint <- as.factor(cleaning$verification_status_joint)
+cleaning$application_type <- as.factor(cleaning$application_type)
+cleaning$initial_list_status <- as.factor(cleaning$initial_list_status)
+cleaning$term <- as.factor(cleaning$term)
+cleaning$purpose <- as.factor(cleaning$purpose)
+cleaning$emp_length <- as.factor(cleaning$emp_length)
+cleaning <- cleaning %>% select(-verification_status_joint, -application_type)
+unique(cleaning$emp_length)
+cleaning %>% filter(emp_length=="n/a")
+temp<-cleaning %>% filter(emp_length=="n/a")
+temp2<-cleaning %>% filter(annual_inc_merged<100000)
+substr(cleaning$issue_d,5,8)
+unique(substr(cleaning$issue_d,5,8))
+
+cleaning <- cleaning %>% mutate( 
+    issue_d = substr(cleaning$issue_d,5,8))
+
+
+
+group1 <- c("2007","2008","2010","2015","2011")
+cleaning <- cleaning %>% mutate(
+    year_group = ifelse(issue_d %in% group1,"Group1", "Group2")) %>% select(-issue_d)
+
+ cleaning$year_group <- as.factor(cleaning$year_group) 
+cleaning <- cleaning %>% select(-policy_code)
+cleaning <- cleaning %>% filter(home_ownership %in% c("MORTGAGE","OWN","RENT") )
+cleaning$home_ownership <- as.factor(cleaning$home_ownership)
+cleaning <- cleaning %>% select(-zip_code)
+Northeast <- c("PA","NY","NJ","CT","RI","MA","VT","NH","ME","DE","MD")
+Southwest <- c("AZ","CA","CO","NV","NM","UT")
+Northwest <- c("ID","MT","OR","WA","WI","AK")
+Southeast <- c("AL","FL","GA","KY","MS","SC","NC","TN","VA","WV")
+Midwest <- c("IL","IN","IA","KS","MI","MN","MO","NE","ND","OH","SD","WI")
+South <- c("AR","LA","OK","TX")
+
+cleaning <- cleaning %>% mutate(
+    region = ifelse(addr_state %in% Northeast,"northeast", 
+              ifelse(addr_state %in% Southwest,"southwest",
+               ifelse(addr_state %in% Northwest,"northwest",
+                 ifelse(addr_state %in% Southeast,"southeast",
+                  ifelse(addr_state %in% Midwest,"midwest","south"))))))
+
+  cleaning <- cleaning %>% select(-addr_state)
+   cleaning$region <- as.factor(cleaning$region)
+   cleaning <- cleaning %>% select(-earliest_cr_line)
+   cleaning <- cleaning %>% select(-emp_length)
+```
+
+
+```{r}
+lcdata <- data.frame(cleaning %>% dplyr::select(int_rate,loan_amnt, term,installment,home_ownership, verification_status,purpose, annual_inc_merged, dti_merged, revol_util,revol_bal))
+#remove outliers in class variable
+outliers  <- boxplot(lcdata$int_rate, plot=FALSE)$out
+lcdata<- lcdata[-which(lcdata$int_rate %in% outliers),]
+
+cols <- c( "home_ownership", "purpose")
+lcdata[cols] <- lapply(lcdata[cols], factor)
+```
+
+
+```{r prepare plot data, warning=FALSE, include=FALSE}
+final_res <- readRDS("../Data/Models/final_res.rds")
+final_model <- final_res$.workflow[[1]]
+
+# enrich predictions with train / test classifier and the absolute error AE to produce separated graphs
+all_predictions <- bind_rows(
+  augment(final_model, new_data =   )  %>% 
+    mutate(type = "validation") %>% 
+  mutate(AE = abs(.pred-int_rate)))
+
+```
+
+
+```{r}
+library(ggplot2)
+all_predictions %>%
+  ggplot(aes(int_rate, .pred)) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              color = "red",
+              size = 1) +
+  facet_wrap(~type)   +
+  ggtitle("visualize quality of predictions")
+```
+
+```{r}
+t1 <- all_predictions %>%
+  filter( type =="validation")%>%
+  group_by(type) %>%
+  metrics(int_rate, .pred)
+
+mse <- function(predictions, actual) {
+  diff <- predictions - actual
+  squared_diff <- diff^2
+  mean_squared_error <- mean(squared_diff)
+  return(mean_squared_error)
+}
+
+mse <- mse(all_predictions$.pred,all_predictions$int_rate)
+
+t1 <- bind_rows(t1,tibble(type="validation",.metric="mse",.estimator="manual",.estimate=mse))
+t1
+```
+
