@@ -316,7 +316,6 @@ cleaning <- cleaning %>% select(-verification_status_joint, -application_type)
 library(dplyr)
 
 unique(cleaning$emp_length)
-cleaning %>% filter(emp_length=="n/a")
 temp<-cleaning %>% filter(emp_length=="n/a")
 hist(temp$annual_inc_merged,breaks = 100)
 hist(cleaning$annual_inc_merged,breaks = 100)
@@ -329,7 +328,6 @@ hist(temp2$annual_inc_merged,breaks = 100)
 ```
 
 ```{r}
-substr(cleaning$issue_d,5,8)
 unique(substr(cleaning$issue_d,5,8))
 
 cleaning <- cleaning %>% mutate( 
