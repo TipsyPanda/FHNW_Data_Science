@@ -385,8 +385,10 @@ train_targets <- data.matrix(matrix_targets)
 build_model <- function() {
   model <- keras_model_sequential() %>%
     layer_dense(units = 64, activation = "relu", input_shape = dim(train_data)[[2]]) %>%
+    layer_dense(units = 128, activation = "relu") %>%
+    layer_dense(units = 128, activation = "relu") %>%
     layer_dense(units = 64, activation = "relu") %>%
-    layer_dense(units = 7, activation = "softmax")
+    layer_dense(units = 7, activation = "softmax") 
 
   model %>% compile(
     optimizer = "rmsprop",
@@ -404,11 +406,11 @@ build_model <- function() {
 # train_targets <- matrix_targets
 
 
-k <- 2
+k <- 10
 indices <- sample(1:nrow(train_data))
 folds <- cut(indices, breaks = k, labels = FALSE)
 
-num_epochs <- 100
+num_epochs <- 1500
 all_mae_histories <- NULL
 for (i in 1:k) {
   cat("processing fold #", i, "\n")
