@@ -307,8 +307,8 @@ matrix_data <- trainingSet_processed %>% select(-tail(names(trainingSet_processe
 matrix_targets <- trainingSet_processed %>% select(tail(names(trainingSet_processed), 7))
 
 #Subset only 100 entries for testing
-matrix_data <- matrix_data[1:100, ]
-matrix_targets <- matrix_targets[1:100, ]
+#matrix_data <- matrix_data[1:100, ]
+#matrix_targets <- matrix_targets[1:100, ]
 ```
 
 ##K-Fold-Validation
@@ -386,12 +386,12 @@ build_model <- function() {
   model <- keras_model_sequential() %>%
     layer_dense(units = 64, activation = "relu", input_shape = dim(train_data)[[2]]) %>%
     layer_dense(units = 64, activation = "relu") %>%
-    layer_dense(units = 7, activation = "sigmoid")
+    layer_dense(units = 7, activation = "softmax")
 
   model %>% compile(
     optimizer = "rmsprop",
     loss = "categorical_crossentropy",
-    metrics = c("mae")
+    metrics = c("accuracy")
   )
 }
 ```
@@ -404,11 +404,11 @@ build_model <- function() {
 # train_targets <- matrix_targets
 
 
-k <- 10
+k <- 2
 indices <- sample(1:nrow(train_data))
 folds <- cut(indices, breaks = k, labels = FALSE)
 
-num_epochs <- 500
+num_epochs <- 100
 all_mae_histories <- NULL
 for (i in 1:k) {
   cat("processing fold #", i, "\n")
@@ -423,12 +423,17 @@ for (i in 1:k) {
   model <- build_model()
 
   # Train the model (in silent mode, verbose=0)
+  # Batch size https://stats.stackexchange.com/questions/153531/what-is-batch-size-in-neural-network
+  # One epoch = one forward pass and one backward pass of all the training examples
+  # Batch size = the number of training examples in one forward/backward pass. The higher the batch size, the more memory space you'll need.
+  # Number of iterations = number of passes, each pass using [batch size] number of examples. To be clear, one pass = one forward pass + one backward pass (we do not count the forward pass and backward pass as two different passes).
+  # Batch size 32 much faster than 1, also the smaller the batch the less accurate the estimate of the gradient will be.
   history <- model %>% fit(
     partial_train_data, partial_train_targets,
     validation_data = list(val_data, val_targets),
-    epochs = num_epochs, batch_size = 1, verbose = 1
+    epochs = num_epochs, batch_size = 64, verbose = 1
   )
-  mae_history <- history$metrics$val_mae
+  mae_history <- history$metrics$val_accuracy
   all_mae_histories <- rbind(all_mae_histories, mae_history)
 }
 
@@ -443,11 +448,20 @@ average_mae_history <- data.frame(
   epoch = seq(1:ncol(all_mae_histories)),
   validation_mae = apply(all_mae_histories, 2, mean)
 )
+
+average_mae_history
+
+library(ggplot2)
+ggplot(average_mae_history, aes(x = epoch, y = validation_mae)) + geom_line()
+
+#It may be a bit hard to see the plot due to scaling issues and relatively high variance. Let's use `geom_smooth()` to try to get a clearer picture:
+ggplot(average_mae_history, aes(x = epoch, y = validation_mae)) + geom_smooth()
+
 ```
 
 ```{r}
-all_scores
-mean(all_scores)
+# all_scores
+# mean(all_scores)
 ```
 
 
