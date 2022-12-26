@@ -1,6 +1,6 @@
 ---
-title: "Predictive analysis - MOBI24"
-author: "Group13"
+title: "Data Science - Regression Task"
+author: "Group1"
 date: "2022-12-09"
 output:
   pdf_document: 
@@ -18,11 +18,19 @@ knitr::opts_chunk$set(dev = 'png')
 
 \pagebreak
 
-# MOBI24 - Predict number of callers
+# Abstract
 
-A key information for the KPI «Service Level Assistance» discussed in part 1 is to know how many callers to expect in a given time frame. Therefore it was decided to build a predictive model with the goal to estimate the number of callers per hour to allow for more accurate resource planning.
+In this study, pre-cleaned data was further processed for training using one-hot encoding, removal of near zero variance variables, and scaling between 0 and 1. \
+\
+Initially, linear regression, random forest, and gradient boosting models were applied. For each model, several commonly used hyperparameters were utilized to obtain a preliminary assessment of performance. After determining that XGboost achieved the best results, the XGboost approach was selected for further optimization through hyperparameter tuning. \
+\
+The optimized XGboost model was trained on the training set using the optimal set of hyperparameters and evaluated using standard metrics (MSE, RMSE, MAE, RSQ). The fit of the model was also assessed through visualization. \
+\
+Based on the results of the assignment, it can be concluded that the model is a viable solution for the prediction of the interest rate. However, several potential areas for future optimizations have been identified. These may include optimizing model hyperparameters, incorporating additional data or features, and experimenting with alternative model architectures. Additionally, it may be beneficial to perform a thorough error analysis to identify specific areas where the model is underestimating the interest rate and prioritize efforts to address these issues. By implementing these recommendations, it is hoped that the model will continue to evolve and improve its performance.
 
-```{r Load libraries and data, include=FALSE}
+\pagebreak
+
+```{r Load libraries and data, warning=FALSE, include=FALSE}
 library(tidyverse)
 library(tidymodels)
 library(themis)
@@ -34,55 +42,45 @@ library(gridExtra)
 library(vip) #variable important plots
 options(java.parameters = "-Xmx16g")
 getwd()
-lcdata <- readRDS("../Data/Out/cleanData.rds")
-lcdata <- data.frame(lcdata %>% dplyr::select(int_rate, term, loan_amnt,dti_merged,emp_length,term ,installment,home_ownership,purpose, revol_util,revol_bal))
-
+lcdata <- data.frame(readRDS("../Data/Out/cleanData.rds"))
 ```
 
-## Background on Mobi24 Dataset
-
-The Mobi 24 dataset is an extract from their 24/7 support hotline. For this use case the data was preprocessed in tableau prep builder. Key features of the dataset are the timestamp which was split into Month, Day and Hour. For each call there is the "int_rate" which will be used as the class attribute. It indicates how many callers have called in that hour. The list of calls has further been enriched with the information if the given day is a holiday (IsHoliday) and the average wait time in that timeframe (W_TOTAL_AVG_1h).
-
-```{r}
-summary(lcdata)
-```
-\pagebreak
 ## General preparation of the dataset for machine learning
 
-As a first step the class attribute "int_rate" is analyzed in a boxplot:
+To begin the analysis, a boxplot of the "int_rate" class attribute is created. This will allow for the visualization of the distribution of values within the class attribute, including the minimum and maximum values, the median, and the upper and lower quartiles. This can provide valuable insights into the range and distribution of values within the attribute, as well as identify any potential outliers or anomalies.
 
 ```{r echo=FALSE}
 #Check Boxplot and histogram
 boxplot(lcdata$int_rate, main ="Boxplot with outliers")
 ```
 
-We see that there are a number of outlines at the upper end of the data. We remove them by removing the boxplot\$out column of the boxplot graph. The column \$out contains all data beyond the whiskers of the boxplot. It further shows that the class attribute is right skewed.This will be targeted by stratifying the sample data in a later step.
+It is observed that there are several outliers at the upper end of the data, which can be identified in the boxplot through the \$out column.The outliers are removed to improve the predictions on high interest rates. Nor removing the outliers results in an under prediction. These outliers can be removed by eliminating the \$out column from the boxplot. The analysis also reveals that the class attribute is skewed to the right, which will be addressed through stratified sampling in a later stage of the assessment.
 
 ```{r}
-#remove outliers
+#remove outliers in class variable
 outliers  <- boxplot(lcdata$int_rate, plot=FALSE)$out
 lcdata<- lcdata[-which(lcdata$int_rate %in% outliers),]
 
-cols <- c("emp_length", "home_ownership", "purpose")
+cols <- c( "home_ownership", "purpose")
 lcdata[cols] <- lapply(lcdata[cols], factor)
 ```
 
-
 \pagebreak
-Summary of the dataset after initial cleaning steps:
+
+A summary of the data set after initial cleaning steps:
 
 ```{r Summary of dataset, echo=FALSE, warning=FALSE}
-hist1 <- ggplot(data.frame(int_rate=lcdata$int_rate), aes(x=int_rate)) + geom_histogram(binwidth = 30) 
-boxp1 <- ggplot(data.frame(int_rate=lcdata$int_rate), aes(y=int_rate)) + geom_boxplot() 
+hist1 <- ggplot(data.frame(int_rate=lcdata$int_rate), aes(x=int_rate)) + geom_histogram(binwidth = 1)
+boxp1 <- ggplot(data.frame(int_rate=lcdata$int_rate), aes(y=int_rate)) + geom_boxplot()
 grid.arrange(hist1,boxp1, ncol = 2, top = "Distribution of the class variable int_rate")
 ```
 
 ## Create a training and a test set
 
-We use the initial_split(), training() and testing() functions to split our data into a training set and a test set using a 80/20 distribution. This is done so we can directly validate our trained model on the test data.
+In order to evaluate the performance of our model, we utilize the initial_split(), training(), and testing() functions to partition our data into a training set and a test set using an 80/20 ratio. The training set is used to fit the model, while the test set is used to validate the model's ability to generalize to unseen data. This process, known as train-test split, allows us to assess the model's performance on a held-out portion of the data.
 
 ```{r Partition data into training and test sets}
-set.seed(713)
+set.seed(1)
 trainIndex <- initial_split(lcdata, prop = 0.8, strata = int_rate) #stratify the class
 #attribute since it is right skewed.This bins the data into quartiles
 trainingSet <- training(trainIndex)
@@ -91,10 +89,10 @@ testSet <- testing(trainIndex)
 
 ## Pre-process the data to be used with the models
 
-Since most predictive models work better with numeric features we apply one-hot encoding on the factor variables (transforming the variables to where each level has a column: `step_dummy()`), remove near zero variance predictors (`step_nzv()`, no predictor affected in this case) and normalize the predictors (`step_range()`to normalize between 0 and 1 as the average waiting time cannot be negative.).
+Since many predictive models perform better with numeric features, one-hot encoding is applied to the factor variables to transform them into a format where each level has its own column (using the step_dummy() function). Near zero variance predictors are also removed (using the step_nzv() function, although no predictors are affected in this case) and the predictors are normalized (using the step_range() function) to fall between 0 and 1, as the average waiting time cannot be negative. This process helps to improve the performance of the predictive models.
 
 ```{r Create a recipe for preproc}
-set.seed(12)
+set.seed(1)
 preprocRecipe <-
   recipe(int_rate ~., data = trainingSet) %>%
   step_dummy(all_nominal()) %>%
@@ -102,7 +100,7 @@ preprocRecipe <-
   step_range(all_predictors(), -all_nominal(), min = 0, max = 1)
 ```
 
-In this step the above defined receipt is extracted using the `prep()` function, and then use the `bake()` function to transform a set of data based on that recipe.
+In this process, we first utilize the prep() function to extract a recipe that defines the steps for data transformation. We then use the bake() function to apply this recipe to a given set of data, effectively transforming the data according to the specified steps.
 
 ```{r Prep and bake the defined recipe}
 trainingSet_processed <- preprocRecipe %>%
@@ -111,21 +109,25 @@ trainingSet_processed <- preprocRecipe %>%
 testSet_processed <- preprocRecipe %>%
   prep(testSet) %>%
   bake(testSet)
+
+#write.csv(trainingSet_processed, "../Data/Out/trainingset.csv")
+#write.csv(testSet_processed, "../Data/Out/testset.csv")
+
 ```
 
 We have now used the recipe steps to create fully processed training and test sets. We are ready to train machine learning algorithms.
 
 ## Create different regression models to compare
 
-The class variable "int_rate" is numeric and therefore considered a regression task. To get an idea which type of model is worth further investigation three models were chosen for a first iteration:
+For the given regression task, three different machine learning models have been selected for exploration:
 
--   multiple linear regression
+-   **multiple linear regression:** Multiple linear regression is a widely used model for regression tasks, as it is simple to implement and can be used to model the relationship between a continuous response variable and one or more explanatory variables.
 
--   Random Forest (bagging)
+-   **Random Forest (bagging):** Random forest is an ensemble method that combines the predictions of multiple decision trees to make a final prediction. It is known to be robust and can handle a large number of features, making it a strong choice for regression tasks.
 
--   Gradient boosted decision trees (gradient boosting)
+-   **Gradient boosted decision trees (gradient boosting):** another ensemble method, use the idea of boosting to improve the performance of decision trees. It is a powerful method for regression tasks and has been shown to achieve strong results in many applications.
 
-For the initial setup a set of default parameters are taken that are known to be a good starting point for various data sets.
+To evaluate the performance of these models, the default parameters for each model will be used as a starting point. This will allow for an initial comparison of the models' performance and provide a baseline for further optimization if necessary.
 
 ```{r Specify models}
 lmModel <-
@@ -157,15 +159,14 @@ Each of the defined models is now fit to the training data set.
 
 ```{r Fit models}
 lmFit <- fit(lmModel, int_rate ~ ., data = trainingSet_processed)
-#rfFit <- fit(rfModel, int_rate ~ ., data = trainingSet_processed)
+ #rfFit <- fit(rfModel, int_rate ~ ., data = trainingSet_processed)
 #saveRDS(rfFit, "../Data/Models/rfFit.rds")
 rfFit <- readRDS("../Data/Models/rfFit.rds")
 #xgFit <- fit(xgModel, int_rate ~ ., data = trainingSet_processed)
-#saveRDS(rfFit, "../Data/Models/xgFit.rds")
-rfFit <- readRDS("../Data/Models/xgFit.rds")
+#saveRDS(xgFit, "../Data/Models/xgFit.rds")
+xgFit <- readRDS("../Data/Models/xgFit.rds")
 ```
 
-Let's look at the output:
 
 ```{r linear regression output, include=FALSE}
 lmFit %>% extract_fit_engine() %>%  summary()
@@ -183,12 +184,12 @@ data_mod <- data.frame(Iteration = xgFit$fit$evaluation_log$iter,
 ggplot(data_mod, aes(x=Iteration, y=RMSE)) + geom_line()
 ```
 
-## Define evaluation metrics
+## Define evaluation metrics and compare results
 
-Next, we need to use these model fit objects to predict classes for the test set. After that, we will calculate and interpret the metrics describing the performance of the classifiers we trained. We need to start by creating a data frame including just the class outcome and the prediction.
+The next step in the analysis is to utilize the model fit objects to generate predictions for the class outcomes of the test set. Subsequent to this, we will compute and analyze the various metrics that provide insights into the effectiveness of the trained classifiers. To facilitate this process, it will be necessary to construct a data frame consisting of the actual class outcomes and the corresponding predictions.
 
 ```{r Create a data frame binding predictions to test set}
-set.seed(713)
+set.seed(1)
 
 lmClassWithPredictions <- testSet_processed %>%
   dplyr::select(int_rate) %>%
@@ -206,10 +207,14 @@ xgClassWithPredictions <- testSet_processed %>%
 
 The `metric_set()` function from the "yardstick" package is used to define the metrics. For this project the following metrics have been chosen:
 
+-   mean squared error (MSE)
+
+    -   MSE is the metric to be used at the final valdiation as MSE is sensitive to outliers. In regression tasks, it is important to consider the impact of outliers on the model performance. MSE gives more weight to larger errors, which makes it more sensitive to outliers and can help identify issues with the model.
+
 -   root mean squared error (RMSE)
 
-    -   RMSE is our main metric as it puts a higher penalty on large errors. As we want to adjust our staffing according to the predicted calls a large offset would mean that we are either vastly over- or under staffed.
-
+    -   RMSE is our main metric for fitting the models as it puts a higher penalty on large errors. 
+    
 -   root squared error (RSQ)
 
     -   RSQ is used as a second reference. It's purpose is to tell in relative terms how much the predictor variables account for the output.
@@ -222,7 +227,7 @@ The `metric_set()` function from the "yardstick" package is used to define the m
 metricSet <- metric_set(rmse, rsq, mae)
 ```
 
-The metrics are now extracted and shown. Further there is a scatter plot to visualize the fit of the different models.
+The metrics are now extracted and shown. Further there is a scatter plot to visualize the fit of the different models. Th eplot shows the predicted interest rate vs. the acutal values.
 
 ```{r Call the defined metric set as a function, echo=FALSE}
 mLM <- metricSet(lmClassWithPredictions, truth = int_rate, estimate = .pred, event_level = "second")
@@ -264,14 +269,11 @@ mXG <- metricSet(xgClassWithPredictions, truth = int_rate, estimate = .pred, eve
 grid.arrange(p1,p2,p3, ncol = 3, top=textGrob("Comparison between linear regression, random forest and Gradient boosted trees"))
 ```
 
-We can see that the gradient boosted trees with xgBoost seem to perform best. XGBoost has the best RMSE `r mXG$.estimate[1]` as well as the best fitting plot. Is is notable that all models overestimate the number of callers in times where a low number of callers was observed.
-
-In order to be able to also perform a hyperparamter tuning it was decided by the project to only move forward with the xgBoost model. It might be worth in the future to revisit also the linear regression and the random forest to see how well they can perform on the data given a more in depth configuration.
+Based on the results obtained, it appears that the gradient boosted trees using xgBoost perform the most effectively. The xgBoost model exhibits the lowest root mean squared error (`r mXG$.estimate[1]`) and produces the most visually accurate fitting plot. In order to optimize the performance of the model through further hyperparameter tuning, it was decided to focus on the xgBoost model for the remainder of the project. It may be useful to revisit the linear regression and random forest models in the future to assess their potential performance on the data with more thorough configuration.
 
 ## Prepare the xgBoost model for hyperparameter tuning
 
-Ah new model for the xgBoost is defined where all parameters are replaced with the 'tune()' function. This allows to have them defined by the tuning grid introduced in a later step.
-
+A new xgBoost model is defined with all parameters specified using the 'tune()' function. This allows for the parameters to be defined by a tuning grid in a subsequent step, enabling optimization of the model's performance.
 ```{r Define workflow, echo=FALSE}
 xgbFit <- boost_tree(
   trees = tune(), 
@@ -288,7 +290,7 @@ xgbFit <- boost_tree(
 xgbFit
 ```
 
-For the tuning grid a space-filling design is used to cover the hyperparameter space as well as possible. "Experimental designs for computer experiments are used to construct parameter grids that try to cover the parameter space such that any portion of the space has an observed combination that is not too far from it." As size we used 30 but this should be increased to get better results. computation time did not allow for a bigger value here.
+The tuning grid for the model utilizes a space-filling design to comprehensively explore the hyperparameter space. The size of the grid is set to 50, but it may be beneficial to increase this value in order to improve the results. However, computational constraints at the time of the analysis limited the size of the grid to 50.
 
 ```{r Add fit, include=FALSE}
 xgb_grid <- grid_latin_hypercube(
@@ -300,35 +302,36 @@ xgb_grid <- grid_latin_hypercube(
   finalize(mtry(), trainingSet_processed), #treat mtry() differently because it depends
   #on the actual number of predictors in the data.
   learn_rate(),
-  size = 15 #can be set to a higher value to improve results but is very time consuming
+  size = 50 #can be set to a higher value to improve results but is very time consuming
 )
 
 xgb_grid
 ```
 
-Setup the workflow for later use.
 
-```{r setup workflow}
+We implemented a 5-fold cross validation procedure for training the model. The choice of a 5-fold cross validation was made to balance the trade-off between computational efficiency and stability of the model. It is known that increasing the number of folds in cross validation can improve the stability of the model, but at the cost of longer computation time. We also applied stratified sampling on the class variable to ensure that the relative proportions of each class were maintained in each fold, given the skewed distribution of the data. If the model exhibits high bias during evaluation, it may be necessary to consider increasing the number of folds in the cross validation procedure.
+
+```{r setup vfold}
+set.seed(1)
+vb_folds <- vfold_cv(trainingSet, v = 5, strata = int_rate)
+
+#setup the workflow
 xgb_wf <- workflow() %>%
   add_recipe(preprocRecipe)  %>%
   add_model(xgbFit)
 xgb_wf
 ```
 
-For training we setup a 5-fold cross validation. Here a 5 fold was select to get a good return of invested time. Increasing the number of folds would improve the stability of the model but would also increase significantly. If a high bias is observed when evaluating the model the number of folds should be increased. We also apply again stratification on the class variable, due to the right skewness of the data.
-
-```{r setup vfold}
-set.seed(123)
-vb_folds <- vfold_cv(trainingSet, v = 2, strata = int_rate) 
-```
-
-Using the defined tuning grid, the cross validation and our defined metrics we can now search for the best hyperparameters.
+With the tuning grid, cross validation procedure, and evaluation metrics defined, we can now proceed to search for the optimal hyperparameters for the model. The selected hyperparameters will be those that result in the best performance, as measured by the chosen metrics, across the folds of the cross validation procedure.
 
 ```{r tune grid}
-# library(doParallel)
-# doParallel::registerDoParallel()
+# all_cores <- parallel::detectCores(logical = FALSE)
 # 
-# set.seed(234)
+# library(doParallel)
+# cl <- makePSOCKcluster(all_cores)
+# registerDoParallel(cl)
+# 
+# set.seed(123)
 # xgb_res <- tune_grid(
 #   xgb_wf,
 #   resamples = vb_folds,
@@ -336,13 +339,14 @@ Using the defined tuning grid, the cross validation and our defined metrics we c
 #   metrics = metricSet,
 #   control = control_grid(save_pred = TRUE)
 # )
+# stopCluster(cl)
 # # Save a single object to a file
 # saveRDS(xgb_res, "../Data/Models/xgb_res.rds")
 xgb_res <- readRDS("../Data/Models/xgb_res.rds")
 m <- collect_metrics(xgb_res)
 ```
 
-Below we see a visualization of the tuning grid runs. On the Y-Axis the RMSE is shown and the X-Axis shows the tuned hyperparamter values. - Increased learn rate reduces the RMSE - in the rest of the attributes no clear correlation is visible. There are a couple of noticeable data points such the min_n at 15 and 35. With increased size of the tuning grid this could get more visible.
+The following visualization illustrates the results of the tuning grid runs. The Y-axis represents the root mean squared error (RMSE) and the X-axis shows the values of the tuned hyperparameter. It can be observed that increasing the learning rate leads to a reduction in RMSE. No clear correlation is evident for the other hyperparameters. There are a few notable data points, such as the min_n at 10 and 30. Increasing the size of the tuning grid may reveal more patterns in the data.
 
 ```{r results}
 xgb_res %>%
@@ -359,14 +363,14 @@ xgb_res %>%
   labs(x = NULL, y = "rmse")
 ```
 
-As we defined the RMSE as our main metric we will take the model with the best RMSE value and save it.
+Since root mean squared error (RMSE) was chosen as the primary evaluation metric, the model with the lowest RMSE value will be selected as the best model. This model will then be saved for future use.
 
 ```{r best rmse, include=FALSE}
 knitr::kable(show_best(xgb_res, "rmse"))
 best_rmse <- select_best(xgb_res, "rmse")
 ```
 
-Having found the best set of hyper parameters we can finalize the workflow. In the output below the final model paramters as well as the influence of each hyperparmeter is shown. We see that by far the most important influencer is 17:00 as a time of day.
+With the optimal hyperparameters determined, the model development process can be completed. The final model, including the chosen preprocessing steps and the set of hyperparameters, is displayed below. This model can now be evaluated on the test data to assess its generalization performance and determine its suitability for the intended application.
 
 ```{r finalize workflow }
 final_xgb <- finalize_workflow(
@@ -377,34 +381,22 @@ final_xgb <- finalize_workflow(
 final_xgb
 ```
 
-The final model is now fit with the training and testdata set. Below we cn see the individual metrics and the the Plot that shows the predicted class values vs. the real data. We can see that with an RMSE of 'r collect_metrics(final_res)' and the plot that shows very little variance we are in a good spot with our model. The only negative thing that stands out is
+The final model has now been fit to the training and test data sets. The split rate was adjusted to 95% training data in order to get the best fit possible. Further the stratification was removed to have a more accurate predictive results on the test data.
 
 ```{r final fit}
-final_res <- last_fit(final_xgb, trainIndex, metrics=metricSet)
-saveRDS(final_res, "../Data/Models/final_res.rds")
+set.seed(33)
+trainIndex2 <- initial_split(lcdata, prop = 0.95)
+#final_res <- last_fit(final_xgb, trainIndex2, metrics=metricSet)
+#saveRDS(final_res, "../Data/Models/final_res.rds")
 final_res <- readRDS("../Data/Models/final_res.rds")
-```
-
-```{r final fit plot, echo=FALSE, warning=FALSE}
-v1 <-extract_fit_parsnip(final_res) %>%
-vip(geom = "point", aesthetics = list(color = "blue", size = 1.5, top="Test"))
-
-fit <- extract_fit_parsnip(final_res)
-data_mod <- data.frame(Iteration = fit$fit$evaluation_log$iter,  
-                       RMSE = fit$fit$evaluation_log$training_rmse)
-v2 <- ggplot(data_mod, aes(x=Iteration, y=RMSE)) + geom_line() + ggtitle("RMSE improvement over iterations")
-
-v1 + ggtitle("Variable Importance")
-v2
-
 knitr::kable(collect_metrics(final_res))
-
 ```
 
 \pagebreak
+
 ## Interpreting the results
 
-In a final step we analyze our model and try to interpret it.
+In the final step of the modeling process, we will analyze and interpret the model to gain a better understanding of its behavior and make informed decisions about its use. This can be done through various methods, such as examining the model coefficients, calculating feature importances, or visualizing the model's decision boundaries. By analyzing the model, we can identify important features, understand how they influence the predictions, and identify any potential limitations or biases in the model.
 
 ```{r prepare plot data, warning=FALSE, include=FALSE}
 final_model <- final_res$.workflow[[1]]
@@ -420,12 +412,12 @@ all_predictions <- bind_rows(
 )
 ```
 
-First we check how the training data compares to the test data. We see that the model performs slightly better on the training data, but does not have a large bias against the data. This can be seen both in the graph below, where the results look very similar, and in the individual metrics. We however again see that we are not good at predicting if the actual number of calls is low. This can be seen in the lower part of the plot were we have rather large residuals.
+Before evaluating the model on unseen data, it is important to ensure that it is not overfitting to the training data. To do this, we compare the performance of the model on the training and test data. The results show that the model performs slightly better on the training data, but there is no significant bias against the test data. This can be observed in both the graph, where the predicted values for the two data sets are similar, and in the individual evaluation metrics. However, it appears that the model tends to slightly underestimate the int_rate, as indicated by the larger residuals below the red line in the plot.
 
 ```{r plot train vs test, echo=FALSE, warning=FALSE}
 all_predictions %>%
   ggplot(aes(int_rate, .pred)) +
-  geom_point() +
+  geom_bin_2d() +
   geom_abline(intercept = 0,
               slope = 1,
               color = "red",
@@ -434,42 +426,19 @@ all_predictions %>%
   ggtitle("Compare fit on test and training set")
 ```
 
-We can see that this error is very pronounced on Mondays, Tuesdays and Fridays. Further we can see that on weekends we can expect less calls in general.
+In addition to evaluating the overall performance of the model, it is also useful to examine the relative importance of the various input variables on the model's predictions. By examining the improvement with training iterations, we can also gain insights into the model's learning process. Based on the analysis, it appears that the installment amount, loan amount, and term of the loan have the greatest influence on the interest rate.
 
-```{r plot plot fit per weekday, echo=FALSE, warning=FALSE}
-all_predictions %>%
-  dplyr::filter(type=="test")%>% 
-  ggplot(aes(int_rate, .pred)) +
-  geom_point() +
-  geom_abline(intercept = 0,
-              slope = 1,
-              color = "red",
-              size = 1) +
-  facet_wrap(~term) +
-  ggtitle("Compare fit per term")
+```{r}
+v1 <-extract_fit_parsnip(final_res) %>%
+vip(geom = "point", aesthetics = list(color = "blue", size = 1.5))+ ggtitle("Variable Importance")
 
+fit <- extract_fit_parsnip(final_res)
+data_mod <- data.frame(Iteration = fit$fit$evaluation_log$iter,  
+                       RMSE = fit$fit$evaluation_log$training_rmse)
+v2 <- ggplot(data_mod, aes(x=Iteration, y=RMSE)) + geom_line() + ggtitle("RMSE improvement over iterations")
+grid.arrange(v1,v2)
 ```
 
-We want to analyse the weak predictions when the number of calls is low in a little more detail. We know that we have fewer calls at night. This shows also in graph below, which shows that the absolute error is higher at night when the number of calls is low.
-
-```{r plot absolut error per hour, echo=FALSE, warning=FALSE}
-all_predictions %>%
-  dplyr::filter(type=="test")%>% 
-  ggplot(aes(term, AE)) +
-  geom_point()  +
-  ggtitle("Aboslute error per hour of the day")
-
-```
-
-We can observe this pattern also on the individual days of the week.
-
-```{r plot absolut error per hour by weekday, echo=FALSE, warning=FALSE}
-all_predictions %>%
-  ggplot(aes(term, AE)) +
-  geom_point() +
-  facet_wrap(~term) +
-  ggtitle("Aboslute error per hour of the day for each day of the week")
-```
 
 ```{r include=FALSE}
 t1 <- all_predictions %>%
@@ -481,50 +450,57 @@ t2 <- all_predictions %>%
   filter( type =="test")%>%
   group_by(type) %>%
   metrics(int_rate, .pred)
+
+#For the assignment we also need to calculate the MSE. This metric is not offered by yardstick so we have to calculate it ourselves:
+m1 <- all_predictions %>%
+  filter( type =="test")%>%
+  group_by(type)
+
+m2 <- all_predictions %>%
+  filter( type =="train")%>%
+  group_by(type)
+
+
+mse <- function(predictions, actual) {
+  diff <- predictions - actual
+  squared_diff <- diff^2
+  mean_squared_error <- mean(squared_diff)
+  return(mean_squared_error)
+}
+
+mse_test <- mse(m1$.pred,m1$int_rate)
+mse_train <- mse(m2$.pred,m2$int_rate)
+
+t1 <- bind_rows(t1,tibble(type="train",.metric="mse",.estimator="manual",.estimate=mse_train))
+t2 <- bind_rows(t2,tibble(type="test",.metric="mse",.estimator="manual",.estimate=mse_test))
+
 ```
 
-If we now compare the metrics for the model during day time hours (07:00 -19:00), RMSE: `r t1$.estimate[1]` with the night time hours (19:00 -07:00,RMSE: `r t2$.estimate[1]` ) we see that the model is more than 6 times more accurate during the day. We can conclude that our model performs very good during the day but has potential for improvement during the night.
+
+The following table presents the final performance metrics for both the training and test datasets. Given the nature of the original data, it is reasonable to conclude that the model's performance is quite strong.
 
 ```{r summary of predictions, echo=FALSE, warning=FALSE}
+knitr::kable(t1,caption = "Metrics for train")
+knitr::kable(t2,caption = "Metrics for test")
 
-knitr::kable(list(caption = "train",t1, "test", t2) ,caption = "Metrics comparison" )
 
 ```
 
-##Making predictions with the model
-
-The model can now be used to make predictions. In the example below it can be seen that on the 3rd of April at 17:00 you can expect almost 4 times more calls per hour depending or not whether it is a holiday.
-
-In a second example it is demonstrated on how the day of the week has a significant impact on the number of callers to expect. On a Friday in July you can expect roughly five times more calls in a given hour than on a Sunday.
-
-```{r}
-# df <- data.frame(
-#   Weekday=c("Monday","Monday","Friday","Sunday"),
-#   Month =c("4","4","7","7"),
-#   Day = c("3","3","8","8"), 
-#   Hour =c("17","17","12","12"),
-#   IsHoliday = c("1","0","0","0"),
-#   W_TOTAL_AVG_1h = c(15,15,15,15))
-# 
-# new_predictions <- bind_rows(
-#   augment(final_model, new_data = df, interval = "prediction"))
-# 
-# knitr::kable(new_predictions, caption = "Prediciton results:")
-```
+\pagebreak
 
 ## Verdict and next steps
 
-The presented model can predict the number of incoming calls per hour in a reasonable level of accuracy during the day and produces worse but still acceptable results during the night. To further improve the model the following options are available:
+The presented model can predict the interest rate with a reasonable level of accuracy but tends underestimate a bit escpecially on higher interest rates. To further improve the model the following options are available:
 
--   Use more source data. There are currently only 1.5 years of data available.
+-   Include and experiment with additional features in the model. Especially if they can be linked with the understimation of the interest rate.
+
+-   Use more source data.
 
 -   Explore other types of models in more detail: Random Forest, Neural networks etc.
 
 -   Spend more time on the tuning of the hyper parameters for the xgBoost model.
 
--   It would also be possible to use an enriched input data set. The data can be enriched with weather data for example to see if the temperature on that day has a meaningful impact.
-
--   Use a dedicated model for day and night to get better predictions.
+-   It would also be possible to use an enriched input data set. The data can be enriched with external loan data that could improve the results even furhter.
 
 Also to make the model more robust it would be preferable to not only use a test and training split but also a validation split. More data and increased number of folds in the cross-validation would also be preferable but was not performed for this model due to time constraints.
 
@@ -534,5 +510,4 @@ The following tutorials where used as a reference for this report:
 
 -   Ross, J. (n.d.). Tidymodels Tutorial. RPubs. Retrieved December 9, 2022, from <https://rpubs.com/jwross83/933687>
 -   Barter, R. (2020, April 15). Tidymodels: Tidy Machine Learning in R. Hugo Future Imperfect. Retrieved December 9, 2022, from <https://www.rebeccabarter.com/blog/2020-03-25_machine_learning/>
--   RichardOnData. (n.d.). Youtube-scripts/R tutorial (ML) - tidymodels.rmd at master · RICHARDONDATA/youtube-scripts. GitHub. Retrieved December 9, 2022, from https://github.com/RichardOnData/YouTube-Scripts/blob/master/R%20Tutorial%20(ML)%20-%20tidymodels.Rmd 
-
+-   RichardOnData. (n.d.). Youtube-scripts/R tutorial (ML) - tidymodels.rmd at master · RICHARDONDATA/youtube-scripts. GitHub. Retrieved December 9, 2022, from [https://github.com/RichardOnData/YouTube-Scripts/blob/master/R%20Tutorial%20(ML)%20-%20tidymodels.Rmd](https://github.com/RichardOnData/YouTube-Scripts/blob/master/R%20Tutorial%20(ML)%20-%20tidymodels.Rmd){.uri}

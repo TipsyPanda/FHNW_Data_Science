@@ -16,52 +16,464 @@ This notebook contains the code samples found in Chapter 3, Section 5 of [Deep L
 
 ***
 
+# Data Exploration & Preparation 
+* Our goal in the second part of the assignment is to predict how good a (new) customer will pay 
+back their credit card depts. In the data set application data from current customers (the first 18 
+attributes) together with their status (last attribute; target) are given.  
+* The attributes from the applications are 
+
+Attribute Name | Explanation | Remarks
+------------- | ------------- | -------------
+ID | Client | number 
+CODE_GENDER | Gender | 
+FLAG_OWN_CAR | Is there a car | 
+FLAG_OWN_REALTY | Is there a property | 
+CNT_CHILDREN | Number of children | 
+AMT_INCOME_TOTAL | Annual income | 
+NAME_INCOME_TYPE | Income category | 
+NAME_EDUCATION_TYPE | Education level | 
+NAME_FAMILY_STATUS | Marital status | 
+NAME_HOUSING_TYPE | Way of living | 
+DAYS_BIRTH | Birthday | Count backwards from current day (0), -1 means yesterday 
+DAYS_EMPLOYED | Start date of employment | Count backwards from current day(0). If positive, it means the person unemployed. 
+FLAG_MOBIL | Is there a mobile phone | 
+FLAG_WORK_PHONE | Is there a work phone | 
+FLAG_PHONE | Is there a phone | 
+FLAG_EMAIL | Is there an email | 
+OCCUPATION_TYPE | Occupation | 
+CNT_FAM_MEMBERS | Family size | 
+
+* The last attribute status contains the “pay-back behavior”, i.e. when did that customer pay back 
+their depts: 
+  + 0: 1-29 days past due 
+  + 1: 30-59 days past due 
+  + 2: 60-89 days overdue 
+  + 3: 90-119 days overdue 
+  + 4: 120-149 days overdue 
+  + 5: Overdue or bad debts, write-offs for more than 150 days 
+  + C: paid off that month 
+  + X: No loan for the month 
+Please note: We are learning only the pay-back behavior. The decision, i.e. if we accept a customer or 
+not, is done in another process step – not here!  
+
+
+***
+
+# Main task 
+* Design your network. Why did you use a feed-forward network, or a convolutional or recursive 
+network – and why not?  
+* Use k-fold validation (with k = 10) to find the best hyperparameters for your network. 
+* Use the average of the accuracy to evaluate the performance of your trained network. 
+* Find a “reasonable” good model. Argue why that model is reasonable. If you are not able to find a 
+reasonable good model, explain what you all did to find a good model and argue why you think 
+that’s not a good model.  
+* Save your trained neural network with save_model_hdf5. Also save your data sets you used 
+for training, testing and validation. 
+
+***
+
+# Some hints 
+* Data preprocessing is easier here; no feature engineering is needed. 
+* You may be able to reuse parts of the exercises we used in our examples during lectures. 
+* All in- and output values need to be floating numbers (or integers in exceptions) in the range of 
+[0,1]. 
+* Please note that a neural network expects a R matrix or vector, not data frames. Transform your 
+data (e.g. a data frame) into a matrix with data.matrix if needed.  
+* There are some models which show an accuracy higher than 90% (!) for training (and test) data – 
+after learning more than 1000 epochs. 
+
+***
+
+# Important notes
+* Single-label, Multiclass classification problem on page 73 in [Deep Learning with R](https://www.manning.com/books/deep-learning-with-r)
+* Spaces must be removed in between '```{r}' and '```', else an error with '<!-- rnb-source-end -->' will be produced
+* K-Fold Validation on page 83ff and 94ff in [Deep Learning with R](https://www.manning.com/books/deep-learning-with-r)
+* Page 110, use Last-Layer activation softmax and loss function categorical_crossentropy
+* Convolutional network ausgeschlossen, weil hauptsächlich Pattern recognition/image classification
+* Recursive ausgeschlossen, weil hauptsächlich für TimeSeries-Vorhersagen verwendet, oder für Vorhersagen
+* Feed-Forward, weil Classification-Task
+
+***
 
 ## Data import
-
-
 ```{r}
+#install.packages("tidymodels")
 library(here)
 library(tidyverse)
-library(ggplot2)  
+library(ggplot2)
 library(dplyr)
 library(tensorflow)
 library(tfdatasets)
+library(tidymodels)
 library(keras)
+library(caret)
 #LOAD DATA
 setwd(getwd())
 dataIn = "../Data/Dataset-part-2.csv"
- data_in <- read.csv(dataIn,header = TRUE, sep =',') 
-View(data_in)
+data_in <- read.csv(dataIn,header = TRUE, sep =',')
+#View(data_in)
 data <- data.frame(data_in)
 summary(data)
+plot(data$status)
 ```
 ##Cleanup
 ```{r}
-data <- data %>%   select(-ID)
-cols <- c("CODE_GENDER", "FLAG_OWN_CAR", "FLAG_OWN_REALTY", "NAME_INCOME_TYPE", "NAME_EDUCATION_TYPE", "NAME_FAMILY_STATUS", "NAME_HOUSING_TYPE", "FLAG_MOBIL", "FLAG_WORK_PHONE", "FLAG_PHONE", "FLAG_EMAIL", "OCCUPATION_TYPE","status")
+# Check for duplicates 
+sum(duplicated(data))
+# No duplicates
+
+#Remove ID (irrelevant) and FLAG_MOBIL (always 1)
+data <- data %>% select(-ID, -FLAG_MOBIL)
+cols <- c("CODE_GENDER","FLAG_OWN_CAR","FLAG_OWN_REALTY","NAME_INCOME_TYPE","NAME_EDUCATION_TYPE", "NAME_FAMILY_STATUS", "NAME_HOUSING_TYPE","FLAG_WORK_PHONE","FLAG_PHONE","FLAG_EMAIL", "OCCUPATION_TYPE","status")
 cols
-data[cols] <- lapply(data[cols], factor)
+data[cols] <- lapply(data[cols],factor)
+
+# Replacing empty values with "Unknown"
+levels(data$OCCUPATION_TYPE) <- c(levels(data$OCCUPATION_TYPE), "Unknown")
+data$OCCUPATION_TYPE[is.na(data$OCCUPATION_TYPE)] <- "Unknown"
+
+# Replacing C and X in Status
+levels(data$status)[levels(data$status)=="C"] <- "6"
+#data$status[data$status == "X"] <- 7
+levels(data$status)[levels(data$status)=="X"] <- "7"
+# #Convert factors into numericals
+# data %<>% mutate_if(is.factor, as.numeric)
+
 summary(data)
 ```
-```{r}
-   # 75% of the sample size
-  smp_size <- floor(0.75 * nrow(data))
-  
-  # set the seed to make your partition reproducible
-  set.seed(123)
-  data_ind <- sample(seq_len(nrow(data)), size = smp_size)
-  train <- as_tibble(data[data_ind, ])
-  test <- as_tibble(data[-data_ind, ])
 
+# Preprocessing
+```{r Create a recipe for preproc}
+set.seed(713)
+trainIndex <- initial_split(data, prop = 0.8, strata = status) 
+trainingSet <- training(trainIndex)
+testSet <- testing(trainIndex)
 
-  
-  
+set.seed(12)
+preprocRecipe <-
+  recipe(status ~., data = data) %>%
+  step_dummy(all_nominal(),  one_hot = TRUE) %>%
+  step_range(all_predictors(), -all_nominal(), min = 0, max = 1)
 ```
+
+# In this step the above defined receipt is extracted using the `prep()` function, and then use the `bake()` function to transform a set of data based on that recipe.
+```{r Prep and bake the defined recipe}
+trainingSet_processed <- preprocRecipe %>%
+  prep(trainingSet) %>%
+  bake(trainingSet)
+testSet_processed <- preprocRecipe %>%
+  prep(testSet) %>%
+  bake(testSet)
+
+```
+
+#OneHotEncoding
+```{r}
+
+# # One-Hot-Encoding for CODE_GENDER
+# dmy <- dummyVars(" ~ CODE_GENDER", data = data)
+# trsf <- data.frame(predict(dmy, newdata = data)) 
+# data <- cbind(data, trsf)
+# data <- data %>% select(-CODE_GENDER)
+# 
+# # One-Hot-Encoding for FLAG_OWN_CAR 
+# dmyCar <- dummyVars(" ~ FLAG_OWN_CAR", data = data)
+# trsfCar <- data.frame(predict(dmyCar, newdata = data))
+# data <- cbind(data, trsfCar)
+# data <- data %>% select(-FLAG_OWN_CAR)
+# 
+# # One-Hot-Encoding for FLAG_OWN_REALTY   
+# dmyRealty <- dummyVars(" ~ FLAG_OWN_REALTY", data = data)
+# trsfRealty <- data.frame(predict(dmyRealty, newdata = data))
+# data <- cbind(data, trsfRealty)
+# data <- data %>% select(-FLAG_OWN_REALTY)
+# 
+# # One-Hot-Encoding for NAME_INCOME_TYPE   
+# dmyNIT <- dummyVars(" ~ NAME_INCOME_TYPE", data = data)
+# trsfNIT <- data.frame(predict(dmyNIT, newdata = data))
+# data <- cbind(data, trsfNIT)
+# data <- data %>% select(-NAME_INCOME_TYPE)
+# 
+# # Factoring NAME_EDUCATION_TYPE as it is ordinal
+# # unique(data$NAME_EDUCATION_TYPE)
+# # "Secondary / secondary special", "Higher education", "Incomplete higher", "Lower secondary", "Academic degree"
+# # Ranking:
+# # 'Lower secondary', 'Secondary / secondary special', 'Incomplete higher', 'Higher education', 'Academic degree'
+# data$NAME_EDUCATION_TYPE <- as.numeric(factor(data$NAME_EDUCATION_TYPE, order=TRUE, levels=c('Lower secondary', 'Secondary / secondary special', 'Incomplete higher', 'Higher education', 'Academic degree')))
+# #dmyNET <- dummyVars(" ~ NAME_EDUCATION_TYPE", data = data)
+# #trsfNET <- data.frame(predict(dmyNET, newdata = data))
+# #data <- cbind(data, trsfNET)
+# #data <- data %>% select(-NAME_EDUCATION_TYPE)
+# 
+# # One-Hot-Encoding for NAME_FAMILY_STATUS   
+# dmyNFS <- dummyVars(" ~ NAME_FAMILY_STATUS", data = data)
+# trsfNFS <- data.frame(predict(dmyNFS, newdata = data))
+# data <- cbind(data, trsfNFS)
+# data <- data %>% select(-NAME_FAMILY_STATUS)
+# 
+# # One-Hot-Encoding for NAME_HOUSING_TYPE   
+# dmyNHT <- dummyVars(" ~ NAME_HOUSING_TYPE", data = data)
+# trsfNHT <- data.frame(predict(dmyNHT, newdata = data))
+# data <- cbind(data, trsfNHT)
+# data <- data %>% select(-NAME_HOUSING_TYPE)
+# 
+# # Remove FLAG_MOBIL, it is always 1
+# #data <- data %>% select(-FLAG_MOBIL)
+# 
+# # One-Hot-Encoding for FLAG_WORK_PHONE  
+# # Not needed, already 1 or 0
+# # dmyFWP <- dummyVars(" ~ FLAG_WORK_PHONE", data = data)
+# # trsfFWP <- data.frame(predict(dmyFWP, newdata = data))
+# # data <- cbind(data, trsfFWP)
+# # data <- data %>% select(-FLAG_WORK_PHONE)
+# 
+# # One-Hot-Encoding for FLAG_PHONE  
+# # Not needed, already 1 or 0
+# # dmyFP <- dummyVars(" ~ FLAG_PHONE", data = data)
+# # trsfFP <- data.frame(predict(dmyFP, newdata = data))
+# # data <- cbind(data, trsfFP)
+# # data <- data %>% select(-FLAG_PHONE)
+# 
+# # One-Hot-Encoding for FLAG_EMAIL 
+# # Not needed, already 1 or 0
+# # dmyFE <- dummyVars(" ~ FLAG_EMAIL", data = data)
+# # trsfFE <- data.frame(predict(dmyFE, newdata = data))
+# # data <- cbind(data, trsfFE)
+# # data <- data %>% select(-FLAG_EMAIL)
+# 
+# # One-Hot-Encoding for OCCUPATION_TYPE
+# #data$OCCUPATION_TYPE
+# #levels(data$OCCUPATION_TYPE)
+# levels(data$OCCUPATION_TYPE) <- c(levels(data$OCCUPATION_TYPE), "Unknown")
+# data$OCCUPATION_TYPE[is.na(data$OCCUPATION_TYPE)] <- "Unknown"
+# dmyOT <- dummyVars(" ~ OCCUPATION_TYPE ", data = data)
+# trsfOT <- data.frame(predict(dmyOT, newdata = data))
+# data <- cbind(data, trsfOT)
+# data <- data %>% select(-OCCUPATION_TYPE )
+# 
+# #summary(data)
+# 
+# ### Normalizing data
+# 
+# ## Does not work for single columns
+# # preprocessParams <- preProcess(data$CNT_CHILDREN, method=c("center", "scale"))
+# # summarize transform parameters
+# # print(preprocessParams)
+# # transform the dataset using the parameters
+# # transformed <- predict(preprocessParams, iris[,1:4])
+# 
+# ## Does not work for single columns
+# # mean <- apply(data, 2, mean)
+# # std <- apply(data, 2, sd)
+# # dataScaled <- scale(data$CNT_CHILDREN, center = mean, scale = std)
+# 
+# # ## Based on https://www.learnbymarketing.com/tutorials/neural-networks-in-r-tutorial/
+# # #Might not be needed if done in preprocessing 
+# # data$CNT_CHILDREN <- (data$CNT_CHILDREN-min(data$CNT_CHILDREN)) / (max(data$CNT_CHILDREN)-min(data$CNT_CHILDREN))
+# # data$DAYS_BIRTH <- (data$DAYS_BIRTH-min(data$DAYS_BIRTH)) / (max(data$DAYS_BIRTH)-min(data$DAYS_BIRTH))
+# # data$DAYS_EMPLOYED <- (data$DAYS_EMPLOYED-min(data$DAYS_EMPLOYED)) / (max(data$DAYS_EMPLOYED)-min(data$DAYS_EMPLOYED))
+# # data$CNT_FAM_MEMBERS <- (data$CNT_FAM_MEMBERS-min(data$CNT_FAM_MEMBERS)) / (max(data$CNT_FAM_MEMBERS)-min(data$CNT_FAM_MEMBERS))
+# 
+# # ggplot(data = data, mapping = aes(x = ID, y = AMT_INCOME_TOTAL)) + geom_point()
+# # heavily right skewed, but NN should not be affected by it
+# #data$AMT_INCOME_TOTAL <- (data$AMT_INCOME_TOTAL-min(data$AMT_INCOME_TOTAL)) / (max(data$AMT_INCOME_TOTAL)-min(data$AMT_INCOME_TOTAL))
+# 
+# summary(data)
+```
+
+## Check data
+```{r}
+# dim(data)
+# sapply(data, class)
+# levels(data$status)
+# 
+# #Replace C and X in status
+# #data$status[data$status == "C"] <- 6
+# levels(data$status)[levels(data$status)=="C"] <- "6"
+# #data$status[data$status == "X"] <- 7
+# levels(data$status)[levels(data$status)=="X"] <- "7"
+# #Convert factors into numericals
+# data %<>% mutate_if(is.factor, as.numeric)
+# levels(data$status)
+# sapply(data, class)
+
+# summarize the class distribution
+percentage <- prop.table(table(data$status)) * 100
+cbind(freq=table(data$status), percentage=percentage)
+
+# Turn data frame into data matrix
+matrix_data <- trainingSet_processed %>% select(-tail(names(trainingSet_processed), 8))
+#matrix_data <- subset(data, select = c(CNT_CHILDREN, AMT_INCOME_TOTAL))
+#matrix_targets <- data.matrix(trainingSet_processed[])
+matrix_targets <- trainingSet_processed %>% select(tail(names(trainingSet_processed), 8))
+
+#Subset only 100 entries for testing
+#matrix_data <- matrix_data[1:100, ]
+#matrix_targets <- matrix_targets[1:100, ]
+```
+
+##K-Fold-Validation
+```{r}
+#    # 75% of the sample size
+#   smp_size <- floor(0.75 * nrow(data))
+# 
+#   # set the seed to make your partition reproducible
+#   set.seed(123)
+#   data_ind <- sample(seq_len(nrow(data)), size = smp_size)
+#   train <- as_tibble(data[data_ind, ])
+#   test <- as_tibble(data[-data_ind, ])
+# 
+#   train_no_status <- select(train,-c(status))
+#   train_status <- select(train,c(status))
+#   
+# 
+# #define model
+# build_model <- function() {
+#   model <- keras_model_sequential() %>%
+#     layer_dense(units = 64, activation = "relu",
+#                 input_shape = dim(train)[[2]]) %>%
+#     layer_dense(units = 64, activation = "relu") %>%
+#     layer_dense(units = 1)
+# 
+#   model %>% compile(
+#     optimizer = "rmsprop",
+#     loss = "mse",
+#     metrics = c("mae")
+#   )
+# }
+
+#   
+# k <- 10
+# indices <- sample(1:nrow(data))
+# folds <- cut(indices, breaks = k, labels = FALSE)
+# 
+# num_epochs <- 100
+# all_scores <- c()
+# 
+#  for (i in 1:k) {
+# 
+#   # Prepare the validation data: data from partition # k
+#   val_indices <- which(folds == i, arr.ind = TRUE)
+#   val_data <- data[val_indices,]
+#   #val_targets <- train_status[val_indices,]
+# 
+#    # Prepare the training data: data from all other partitions
+#   partial_train_data <- train_no_status[-val_indices,]
+#   #partial_train_targets <- train_status[-val_indices,]
+# 
+#   #train & eval model
+#   #model <- build_model()
+# 
+# 
+#   #model %>% fit(partial_train_data, partial_train_targets,
+#   #              epochs = num_epochs, batch_size = 1, verbose = 0)
+# 
+#   #validate
+#   #results <- model %>% evaluate(val_data, val_targets, verbose = 0)
+# 
+#   #all_scores <- c(all_scores, results["mae"])
+#  }
+```
+## Build Model
+```{r}
+  #Karsten's try
+#train_data <- matrix_data
+train_data <- data.matrix(matrix_data)
+test_data <- data.matrix(matrix_data)
+train_targets <- data.matrix(matrix_targets)
+
+# Function to build the model
+build_model <- function() {
+  model <- keras_model_sequential() %>%
+    layer_dense(units = 64, activation = "relu", input_shape = dim(train_data)[[2]]) %>%
+    layer_dense(units = 128, activation = "relu") %>%
+    layer_dense(units = 64, activation = "relu") %>%
+    layer_dense(units = 8, activation = "softmax") 
+
+  model %>% compile(
+    optimizer = "rmsprop",
+    loss = "categorical_crossentropy",
+    metrics = "categorical_accuracy"
+  )
+}
+```
+## Train model
+```{r}
+# mean <- apply(matrix_data, 2, mean)
+# std <- apply(matrix_data, 2, sd)
+# train_data <- scale(matrix_data, center = mean, scale = std)
+# test_data <- scale(matrix_data, center = mean, scale = std)
+# train_targets <- matrix_targets
+
+
+k <- 1
+indices <- sample(1:nrow(train_data))
+folds <- cut(indices, breaks = k, labels = FALSE)
+
+num_epochs <- 1500
+all_acc_histories <- NULL
+for (i in 1:k) {
+  cat("processing fold #", i, "\n")
+
+  val_indices <- which(folds == i, arr.ind = TRUE)
+  val_data <- train_data[val_indices,]
+  val_targets <- train_targets[val_indices,]
+  
+  partial_train_data <- train_data[-val_indices,]
+  partial_train_targets <- train_targets[-val_indices,]
+
+  model <- build_model()
+
+  # Train the model (in silent mode, verbose=0)
+  # Batch size https://stats.stackexchange.com/questions/153531/what-is-batch-size-in-neural-network
+  # One epoch = one forward pass and one backward pass of all the training examples
+  # Batch size = the number of training examples in one forward/backward pass. The higher the batch size, the more memory space you'll need.
+  # Number of iterations = number of passes, each pass using [batch size] number of examples. To be clear, one pass = one forward pass + one backward pass (we do not count the forward pass and backward pass as two different passes).
+  # Batch size 32 much faster than 1, also the smaller the batch the less accurate the estimate of the gradient will be.
+  history <- model %>% fit(
+    partial_train_data, partial_train_targets,
+    validation_data = list(val_data, val_targets),
+    epochs = num_epochs, batch_size = 512, verbose = 1
+  )
+  acc_history <- history$metrics$val_accuracy
+  all_acc_histories <- rbind(all_acc_histories, acc_history)
+}
+
+
+#reticulate::py_last_error()
+```
+
+#We can then compute the average of the per-epoch MAE scores for all folds:
+
+```{r}
+average_acc_history <- data.frame(
+  epoch = seq(1:ncol(all_acc_histories)),
+  validation_acc = apply(all_acc_histories, 2, mean)
+)
+
+#Schreibe Ergebnis in csv, bitte den Namen abändern
+#write.csv(average_mae_history, "../Doc/Versuch 1/Try 1.csv", row.names=FALSE)
+
+average_acc_history
+
+library(ggplot2)
+ggplot(average_acc_history, aes(x = epoch, y = validation_acc)) + geom_line()
+
+#It may be a bit hard to see the plot due to scaling issues and relatively high variance. Let's use `geom_smooth()` to try to get a clearer picture:
+ggplot(average_acc_history, aes(x = epoch, y = validation_acc)) + geom_smooth()
+
+```
+
+```{r}
+# all_scores
+# mean(all_scores)
+```
+
+
 ```{r}
   ## Take Model1 and Scale data
   ##scale and preprocess training and test data
-  library(caret)
+  #library(caret)
   pre_proc_val <- preProcess(train, method = c("center", "scale"))  
   train = predict(pre_proc_val, train)
   test = predict(pre_proc_val, test)
