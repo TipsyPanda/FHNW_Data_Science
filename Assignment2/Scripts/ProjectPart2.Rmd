@@ -114,6 +114,7 @@ data_in <- read.csv(dataIn,header = TRUE, sep =',')
 #View(data_in)
 data <- data.frame(data_in)
 summary(data)
+plot(data$status)
 ```
 ##Cleanup
 ```{r}
@@ -151,7 +152,7 @@ testSet <- testing(trainIndex)
 set.seed(12)
 preprocRecipe <-
   recipe(status ~., data = data) %>%
-  step_dummy(all_nominal()) %>%
+  step_dummy(all_nominal(),  one_hot = TRUE) %>%
   step_range(all_predictors(), -all_nominal(), min = 0, max = 1)
 ```
 
@@ -301,10 +302,10 @@ percentage <- prop.table(table(data$status)) * 100
 cbind(freq=table(data$status), percentage=percentage)
 
 # Turn data frame into data matrix
-matrix_data <- trainingSet_processed %>% select(-tail(names(trainingSet_processed), 7))
+matrix_data <- trainingSet_processed %>% select(-tail(names(trainingSet_processed), 8))
 #matrix_data <- subset(data, select = c(CNT_CHILDREN, AMT_INCOME_TOTAL))
 #matrix_targets <- data.matrix(trainingSet_processed[])
-matrix_targets <- trainingSet_processed %>% select(tail(names(trainingSet_processed), 7))
+matrix_targets <- trainingSet_processed %>% select(tail(names(trainingSet_processed), 8))
 
 #Subset only 100 entries for testing
 #matrix_data <- matrix_data[1:100, ]
@@ -387,12 +388,12 @@ build_model <- function() {
     layer_dense(units = 64, activation = "relu", input_shape = dim(train_data)[[2]]) %>%
     layer_dense(units = 128, activation = "relu") %>%
     layer_dense(units = 64, activation = "relu") %>%
-    layer_dense(units = 7, activation = "softmax") 
+    layer_dense(units = 8, activation = "softmax") 
 
   model %>% compile(
     optimizer = "rmsprop",
     loss = "categorical_crossentropy",
-    metrics = c("accuracy")
+    metrics = "categorical_accuracy"
   )
 }
 ```
@@ -405,11 +406,11 @@ build_model <- function() {
 # train_targets <- matrix_targets
 
 
-k <- 10
+k <- 1
 indices <- sample(1:nrow(train_data))
 folds <- cut(indices, breaks = k, labels = FALSE)
 
-num_epochs <- 10
+num_epochs <- 1500
 all_acc_histories <- NULL
 for (i in 1:k) {
   cat("processing fold #", i, "\n")
