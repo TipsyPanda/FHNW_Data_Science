@@ -406,7 +406,7 @@ build_model <- function() {
 # train_targets <- matrix_targets
 
 
-k <- 1
+k <- 2
 indices <- sample(1:nrow(train_data))
 folds <- cut(indices, breaks = k, labels = FALSE)
 
