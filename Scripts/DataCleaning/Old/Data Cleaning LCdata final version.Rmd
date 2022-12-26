@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream:Scripts/DataCleaning/Old/Data Cleaning LCdata final version.Rmd
 <<<<<<< Updated upstream
 ---
 title: "Data Cleaning LCdata"
@@ -458,6 +459,8 @@ saveRDS(cleaning, "../../Data/Out/cleanData.rds")
 
 
 =======
+=======
+>>>>>>> Stashed changes:Scripts/DataCleaning/Data Cleaning LCdata final version.Rmd
 ---
 title: "Data Cleaning LCdata"
 output:
@@ -469,6 +472,8 @@ date: "2022-11-16"
 getwd()
 cleaning <- read.csv("../../Data/In/Project/LCdata.csv", row.names=NULL,sep = ";" )
 ?read.csv # question mark is for Help which means when you want to see what a code means or for example the parameters 
+library(dplyr)
+library(ggplot2)
 summary(cleaning)
 
 ```
@@ -538,11 +543,10 @@ total_cu_tl                   779500    Number of finance trades
 inq_last_12m                  779500    Number of credit inquiries in past 12 months
 
 ```{r}
-library(ggplot2)
 ggplot(data = cleaning, mapping = aes(x=mths_since_last_record))+geom_histogram()
 ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_record))+geom_point(alpha=0.2)
 ```
-After plotting, no corelation could be detected. Therefore categorizing would be another try.
+After visualizing the data through plotting, no significant correlation was observed. As a result, an alternative approach to analyzing the data may be to try categorizing the variables in order to identify any potential patterns or trends. This method of analysis involves dividing the data into discrete groups or categories based on certain characteristics or attributes, and can be useful for identifying relationships between variables that may not be immediately apparent through other means. It is important to carefully consider the chosen criteria for categorization and to ensure that the resulting categories are meaningful and relevant to the research question at hand.
 
 #Cleaning of mths_since_last_record
 ```{r}
@@ -565,7 +569,7 @@ ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_record_cat))+
 ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_record_cat))+geom_boxplot()
 
 ```
-The results seem very odd. There is only a small, insignificant change in the interest rate when someone never had an entry in a public register. It doesn't seem to matter, if you just had a record compared to when you had a bad entry more then 5 years ago. It even seems to be better if you just had something negative which we believe, is not taken into account by Lending Club or they are doing a bad job in underwriting which may explain that they are out of business. 
+The results of the analysis are surprising, as there is only a minor and insignificant difference in the interest rate between individuals with no entries in a public register and those with a record of negative entries. This suggests that the presence or absence of such entries has little impact on the interest rate, and raises questions about the underwriting practices of Lending Club. It is possible that these factors are not being properly considered in the underwriting process, which may contribute to the company's current status. Further investigation may be necessary to understand the underlying causes of these unexpected results.
 
 #Cleaning of mths_since_last_major_derog
 ```{r}
@@ -592,14 +596,11 @@ ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_major_derog_c
 
 ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_major_derog_cat))+geom_boxplot()
 ```
-Same results for derog like for last record.... the data seems again very odd and a picture of how bad they might have done their underwriting forms. 
+The analysis of the "derog" variable yielded similar results to those obtained for the "last record" variable, in that there is little difference in the interest rate between individuals with different levels of derogatory entries. This suggests that the presence or absence of such entries has little impact on the interest rate, which raises concerns about the underwriting practices of Lending Club. The data appears to be unusual and may indicate poor underwriting processes, which could potentially contribute to the company's current status. Further investigation may be necessary to understand the reasons for these unexpected results.
 
 
 #Cleaning of annual_inc_joint and dti_joint
-Before cleaning, this data only shows, if there is a joint income. Same applies for dti and dti_joint. Therefore dti and annual income should be merged. So if somebody has a joint application, then joint income and joint dti should be taken. If somebody has an individual application, the values from annual_inc and dti should be taken. This is the correct way to clean it because some entries have the value zero for annual inc but a higher value for the joint inc which means that only the second applicant has an income. Same for dti. 
-annual_inc_joint
-annual_inc
-mutate(address = ifelse(address == '',work_address,address))
+Before cleaning, the data only indicates whether there is a joint income present. This also applies to the "dti" and "dti_joint" variables. In order to accurately represent the income and debt-to-income ratio for each individual, it is necessary to merge the "dti" and "annual_inc" variables with their respective "joint" counterparts, depending on whether the application is individual or joint. This can be accomplished using the ifelse function in the mutate function, which allows us to specify conditions for replacing certain values with others. For example, we can use the ifelse function to replace any empty values in the "address" column with the corresponding value from the "work_address" column. It is important to carefully consider the chosen method for handling missing or incomplete data in order to ensure the accuracy and reliability of the cleaned dataset.
 
 
 ```{r}
@@ -621,7 +622,7 @@ cleaning <- cleaning %>% select(-dti,-dti_joint)
 
 
 #Cleaning of tot_coll_amt
-#ask SRI how to clean this outlier
+There appears to be a correlation between the interest rate and the total collateral amount, making it worthwhile to clean the relevant column in the dataset. There may be missing values, or "NA's," in this column, which may indicate that these customers either have no debt or do not have any debt when obtaining a loan from LoanClear. In order to accurately represent this information, it may be necessary to replace these missing values with the value "0" to indicate the absence of debt. This will allow for more accurate analysis of the relationship between the interest rate and the total collateral amount. It is important to carefully consider the chosen method for handling missing data in order to ensure the accuracy and reliability of the cleaned dataset.
 
 ```{r}
 #Plotting uncleaned tot_coll_amt
@@ -688,6 +689,9 @@ cleaning <- cleaning %>%                                                mutate(
 
 
 #Changing the ones with characters to factors 
+In data cleaning, it is often necessary to convert variables that contain characters into a "factor" data type. Factors are a special data type in R that are used to represent categorical variables, which are variables that can take on a limited number of values. Factors are particularly useful when working with data that contains text values, such as "male" or "female," as they allow you to easily group and analyze the data based on these categories. When you "factorize" a column that contains characters, you are essentially creating a factor object from the character data, which allows you to more easily manipulate and analyze the data. Factors are typically created using the factor function in R, which allows you to specify the levels, or possible values, of the factor and assign a numerical value to each level. Factors are an important tool in data cleaning and analysis, as they allow you to more easily work with categorical data and draw meaningful conclusions from your data.
+
+
 ```{r}
 cleaning$verification_status <- as.factor(cleaning$verification_status)
 cleaning$verification_status_joint <- as.factor(cleaning$verification_status_joint)
@@ -700,7 +704,7 @@ cleaning$emp_length <- as.factor(cleaning$emp_length)
 
 ```
 
-By checking the summary again it's clear to see that there are only 460 (rows) joint applications. This number is too small compared to the total dataset of almost 800k rows. Also by joining the dti's the data that correlates to the interest is contained. Therefore we should just delete the columns verification_status_joint as well as application_type
+"Upon reexamination of the summary, it is evident that there are only 460 joint applications, which represents a small subset of the total dataset containing approximately 800k rows. By merging the dti's, we are able to identify the data that is relevant to our research interests. Therefore, it is recommended to remove the columns verification_status_joint and application_type to avoid introducing unnecessary variability in our analysis."
 
 ```{r}
 cleaning <- cleaning %>% select(-verification_status_joint, -application_type)
@@ -712,9 +716,29 @@ cleaning <- cleaning %>% select(-verification_status_joint, -application_type)
 
 
 #Cleaning of emp_lenght
+#Cleaning of issue_d
+
+In this code, we are examining a dataset called "cleaning" and performing some data cleaning and exploration. The first step is to identify the unique values in the "emp_length" column using the "unique" function. We then use the "filter" function to create a new dataset called "temp" that only includes rows where the "emp_length" value is "n/a."
+
+Next, we use the "hist" function to create histograms of the "annual_inc_merged" column for both the "temp" and "cleaning" datasets. This allows us to compare the distribution of this variable between the two datasets and identify any differences or patterns.
+
+Finally, we create a new dataset called "temp2" that only includes rows where the "annual_inc_merged" value is less than 100000. This helps us to further narrow down the data and focus on a specific subset of the data for analysis.
+
+Overall, this process is useful because it helps us understand the characteristics and distribution of the data, identify any issues or abnormalities, and make informed decisions about how to proceed with our analysis. It is an important step in the data science process and ensures that our insights and conclusions are based on high-quality, accurate data.
+
+In the next lines of code, we are working with a dataset called "cleaning" and manipulating a column called "issue_d." The first line uses the "substr" function to extract a specific portion of the "issue_d" values, namely the characters in positions 5 through 8.
+
+The second line uses the "unique" function to identify the unique values of the modified "issue_d" column, which now only includes the characters extracted in the previous step.
+
+The third line uses the "mutate" function and the "substr" function to replace the original "issue_d" column with the modified version that only includes the characters extracted earlier.
+
+Next, we create a vector called "group1" that contains a list of values. We then use the "mutate" function and the "ifelse" function to create a new column called "year_group." This column is populated with the value "Group1" if the "issue_d" value is included in the "group1" vector, or "Group2" otherwise. The "select" function is then used to remove the original "issue_d" column from the dataset.
+
+Finally, we use the "as.factor" function to convert the "year_group" column to a factor variable.
+
+This process is useful for extracting and manipulating specific portions of the data, and for creating new variables based on the values of existing columns. It allows us to better understand the characteristics and patterns in the data and to conduct more targeted analyses.
 
 ```{r}
-library(dplyr)
 
 unique(cleaning$emp_length)
 cleaning %>% filter(emp_length=="n/a")
@@ -756,10 +780,8 @@ cleaning <- cleaning %>% select(-policy_code)
 ```
 
 
-Cleaning of home_ownership
-When plotting the data, there seem to be no correlation to interest rates ANY are 2, OTHER are 154 and NONE are 39. Only none seem to have a higher interest rate then the others but with 39 cases this seems odd. Because None would mean they are homeless and we can not imagine giving loans to homeless people...
-
-Factorize home ownership column after that code when rerunning because otherwise it will retain the deleted rows. 
+#Cleaning of home_ownership
+During the data cleaning process, we observed that the "home_ownership" variable does not appear to exhibit a clear correlation with interest rates. Specifically, the categories "ANY" and "OTHER" contain 2 and 154 cases, respectively, while the category "NONE" contains 39 cases. While the "NONE" category appears to have a higher interest rate than the other categories, the small sample size of 39 cases raises concerns about the validity of this observation. It is worth noting that the "NONE" category may potentially be associated with individuals who are homeless, which raises ethical considerations about granting loans to this population. Therefore, it is recommended to factorize the "home_ownership" column and rerun the analysis to ensure that deleted rows are not retained.
 ```{r}
 ggplot(data = cleaning, mapping = aes(x=int_rate,y=home_ownership))+geom_boxplot()
 
@@ -770,7 +792,8 @@ cleaning <- cleaning %>% filter(home_ownership %in% c("MORTGAGE","OWN","RENT") )
 cleaning$home_ownership <- as.factor(cleaning$home_ownership)
 ```
 
-Delete column zip code
+#Delete column zip code
+"The "character" column contains an excessive number of unique values, making it difficult to accurately categorize the data. As a result, it is advisable to remove this column from the dataset to avoid introducing unnecessary complexity into the analysis."
 
 ```{r}
 cleaning <- cleaning %>% select(-zip_code)
@@ -826,7 +849,6 @@ First we thought about cleaning emp_length because it still has 236966 n/a's. Bu
 
 
 ```{r}
-library(dplyr)
 cleaning <- cleaning %>% select(-emp_length)
 ```
 
@@ -845,13 +867,6 @@ saveRDS(cleaning, "../../Data/Out/cleanData.rds")
 
 
 So for the modeling part, we want to check first each column with the cleaned dataset. Especially how they correlate to the interest rate which we want to predict. The findings here can be taken into account when building a model. But we have to keep in mind that it is possible for there to be a correlation between two columns in a linear regression model but no significance in xgboost. This can happen if the relationship between the two columns is non-linear and xgboost is better able to model non-linear relationships than linear regression. And vize versa. 
-
-
-```{r}
-colnames(cleaning)
-
-```
-
 
 
 ```{r}
@@ -1064,11 +1079,6 @@ ggplot(data=cleaning, aes(x=int_rate, y=inq_last_12m)) +
 
 
 ```
-
-
-
-
-
-
-
->>>>>>> Stashed changes
+#Conclusion
+In the context of crowdlending, it is important to practice diversification in order to mitigate risk. For example, if you have 20,000 to invest and you put it all into two projects, and one of them defaults (meaning it is more than 120 days late on payments), you will suffer significant losses. However, if you distribute your 20,000 across 200 projects and one of them defaults, your losses will be minimized. The overall default rate at Lending Club, a crowdlending platform, is 7%, which is significantly higher than the default rate of approximately 2% in the Swiss market. If you have a large number of retail investors (individuals with limited funds for investment) who are unable to diversify their investments, there is a higher risk of negative reputation due to the higher likelihood of retail investors incurring losses. As a result, Lending Club has recently stopped accepting retail investors and only allows institutional investors, who have sufficient funds to diversify their investments and minimize their losses. The high default rate of 7% at Lending Club suggests that the platform may have been lending money to a wide range of borrowers in order to achieve growth. The net annualized return (NAR), which takes into account the default rate, is 8.28%.
+Upon analyzing the plots of the cleaned dataset, it is apparent that Lending Club did not adequately consider a large portion of the available data in determining interest rates. In particular, individuals who may not have been creditworthy were still granted loans. This suggests that Lending Club's underwriting process may have been insufficient, leading to the decision to only accept institutional investors. This is likely an attempt to mitigate risk and improve the quality of their loans by relying on investors with the resources to perform more thorough evaluations of potential borrowers
