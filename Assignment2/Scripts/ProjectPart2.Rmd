@@ -107,6 +107,7 @@ library(tfdatasets)
 library(tidymodels)
 library(keras)
 library(caret)
+library(themis)
 #LOAD DATA
 setwd(getwd())
 dataIn = "../Data/Dataset-part-2.csv"
@@ -144,27 +145,42 @@ summary(data)
 
 # Preprocessing
 ```{r Create a recipe for preproc}
-set.seed(713)
-trainIndex <- initial_split(data, prop = 0.8, strata = status) 
+set.seed(1)
+trainIndex <- initial_split(data, prop = 0.7, strata = status) 
 trainingSet <- training(trainIndex)
 testSet <- testing(trainIndex)
+status_folds <- vfold_cv(trainingSet, strata = status)
+status_folds
+```
 
-set.seed(12)
+
+```{r Create a recipe for preproc2}
+set.seed(5)
 preprocRecipe <-
   recipe(status ~., data = data) %>%
-  step_dummy(all_nominal(),  one_hot = TRUE) %>%
-  step_range(all_predictors(), -all_nominal(), min = 0, max = 1)
+  step_dummy(all_nominal(), -status,  one_hot = TRUE) %>%
+  step_range(all_predictors(), -all_nominal(), min = 0, max = 1)%>%
+ # step_downsample(status, over_ratio = 1) %>%
+  step_smote(status, over_ratio = 0.5, skip=TRUE) %>%
+ # step_smotenc(status, over_ratio = 1) %>%
+ #step_adasyn(status, over_ratio = 1) %>%
+ #step_nearmiss(status, over_ratio = 1) %>%
+   
+  step_dummy(status,  one_hot = TRUE)# %>%
+
+
 ```
 
 # In this step the above defined receipt is extracted using the `prep()` function, and then use the `bake()` function to transform a set of data based on that recipe.
 ```{r Prep and bake the defined recipe}
 trainingSet_processed <- preprocRecipe %>%
-  prep(trainingSet) %>%
-  bake(trainingSet)
+  prep(trainingSet, retain = TRUE) %>%
+  bake(new_data = NULL)
 testSet_processed <- preprocRecipe %>%
   prep(testSet) %>%
-  bake(testSet)
+  bake(new_data =testSet)
 
+summary(trainingSet_processed)
 ```
 
 #OneHotEncoding
@@ -307,6 +323,9 @@ matrix_data <- trainingSet_processed %>% select(-tail(names(trainingSet_processe
 #matrix_targets <- data.matrix(trainingSet_processed[])
 matrix_targets <- trainingSet_processed %>% select(tail(names(trainingSet_processed), 8))
 
+matrix_data_test  <- testSet_processed %>% select(-tail(names(testSet_processed), 8))
+matrix_targets_test  <- testSet_processed %>% select(tail(names(testSet_processed), 8))
+
 #Subset only 100 entries for testing
 #matrix_data <- matrix_data[1:100, ]
 #matrix_targets <- matrix_targets[1:100, ]
@@ -374,13 +393,15 @@ matrix_targets <- trainingSet_processed %>% select(tail(names(trainingSet_proces
 #   #all_scores <- c(all_scores, results["mae"])
 #  }
 ```
+
 ## Build Model
 ```{r}
   #Karsten's try
 #train_data <- matrix_data
 train_data <- data.matrix(matrix_data)
-test_data <- data.matrix(matrix_data)
+test_data <- data.matrix(matrix_data_test)
 train_targets <- data.matrix(matrix_targets)
+test_targets <- data.matrix(matrix_targets_test)
 
 # Function to build the model
 build_model <- function() {
@@ -392,11 +413,13 @@ build_model <- function() {
 
   model %>% compile(
     optimizer = "rmsprop",
-    loss = "categorical_crossentropy",
+    loss = loss_categorical_crossentropy(),
     metrics = "categorical_accuracy"
   )
+
 }
 ```
+
 ## Train model
 ```{r}
 # mean <- apply(matrix_data, 2, mean)
@@ -406,7 +429,7 @@ build_model <- function() {
 # train_targets <- matrix_targets
 
 
-k <- 2
+k <- 5
 indices <- sample(1:nrow(train_data))
 folds <- cut(indices, breaks = k, labels = FALSE)
 
@@ -416,12 +439,11 @@ for (i in 1:k) {
   cat("processing fold #", i, "\n")
 
   val_indices <- which(folds == i, arr.ind = TRUE)
-  val_data <- train_data[val_indices,]
-  val_targets <- train_targets[val_indices,]
+  val_data <- test_data#train_data[val_indices,]
+  val_targets <- test_targets#train_targets[val_indices,]
   
   partial_train_data <- train_data[-val_indices,]
   partial_train_targets <- train_targets[-val_indices,]
-
   model <- build_model()
 
   # Train the model (in silent mode, verbose=0)
@@ -433,7 +455,7 @@ for (i in 1:k) {
   history <- model %>% fit(
     partial_train_data, partial_train_targets,
     validation_data = list(val_data, val_targets),
-    epochs = num_epochs, batch_size = 512, verbose = 1
+    epochs = num_epochs, batch_size = 64, verbose = 1
   )
   acc_history <- history$metrics$val_accuracy
   all_acc_histories <- rbind(all_acc_histories, acc_history)
