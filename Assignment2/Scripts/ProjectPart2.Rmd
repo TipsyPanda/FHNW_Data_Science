@@ -98,6 +98,7 @@ after learning more than 1000 epochs.
 ## Data import
 ```{r}
 #install.packages("tidymodels")
+#install.packages("themis")
 library(here)
 library(tidyverse)
 library(ggplot2)
@@ -149,7 +150,7 @@ set.seed(1)
 trainIndex <- initial_split(data, prop = 0.7, strata = status) 
 trainingSet <- training(trainIndex)
 testSet <- testing(trainIndex)
-status_folds <- vfold_cv(trainingSet, strata = status)
+status_folds <- vfold_cv(trainingSet, v = 10, strata = status)
 status_folds
 ```
 
@@ -173,6 +174,7 @@ preprocRecipe <-
 
 # In this step the above defined receipt is extracted using the `prep()` function, and then use the `bake()` function to transform a set of data based on that recipe.
 ```{r Prep and bake the defined recipe}
+# retain = TRUE and new_data = NULL ensures that pre-processed trainingSet is returned 
 trainingSet_processed <- preprocRecipe %>%
   prep(trainingSet, retain = TRUE) %>%
   bake(new_data = NULL)
@@ -180,7 +182,7 @@ testSet_processed <- preprocRecipe %>%
   prep(testSet) %>%
   bake(new_data =testSet)
 
-summary(trainingSet_processed)
+#summary(trainingSet_processed)
 ```
 
 #OneHotEncoding
@@ -330,73 +332,8 @@ matrix_targets_test  <- testSet_processed %>% select(tail(names(testSet_processe
 #matrix_data <- matrix_data[1:100, ]
 #matrix_targets <- matrix_targets[1:100, ]
 ```
-
-##K-Fold-Validation
-```{r}
-#    # 75% of the sample size
-#   smp_size <- floor(0.75 * nrow(data))
-# 
-#   # set the seed to make your partition reproducible
-#   set.seed(123)
-#   data_ind <- sample(seq_len(nrow(data)), size = smp_size)
-#   train <- as_tibble(data[data_ind, ])
-#   test <- as_tibble(data[-data_ind, ])
-# 
-#   train_no_status <- select(train,-c(status))
-#   train_status <- select(train,c(status))
-#   
-# 
-# #define model
-# build_model <- function() {
-#   model <- keras_model_sequential() %>%
-#     layer_dense(units = 64, activation = "relu",
-#                 input_shape = dim(train)[[2]]) %>%
-#     layer_dense(units = 64, activation = "relu") %>%
-#     layer_dense(units = 1)
-# 
-#   model %>% compile(
-#     optimizer = "rmsprop",
-#     loss = "mse",
-#     metrics = c("mae")
-#   )
-# }
-
-#   
-# k <- 10
-# indices <- sample(1:nrow(data))
-# folds <- cut(indices, breaks = k, labels = FALSE)
-# 
-# num_epochs <- 100
-# all_scores <- c()
-# 
-#  for (i in 1:k) {
-# 
-#   # Prepare the validation data: data from partition # k
-#   val_indices <- which(folds == i, arr.ind = TRUE)
-#   val_data <- data[val_indices,]
-#   #val_targets <- train_status[val_indices,]
-# 
-#    # Prepare the training data: data from all other partitions
-#   partial_train_data <- train_no_status[-val_indices,]
-#   #partial_train_targets <- train_status[-val_indices,]
-# 
-#   #train & eval model
-#   #model <- build_model()
-# 
-# 
-#   #model %>% fit(partial_train_data, partial_train_targets,
-#   #              epochs = num_epochs, batch_size = 1, verbose = 0)
-# 
-#   #validate
-#   #results <- model %>% evaluate(val_data, val_targets, verbose = 0)
-# 
-#   #all_scores <- c(all_scores, results["mae"])
-#  }
-```
-
 ## Build Model
 ```{r}
-  #Karsten's try
 #train_data <- matrix_data
 train_data <- data.matrix(matrix_data)
 test_data <- data.matrix(matrix_data_test)
@@ -406,21 +343,21 @@ test_targets <- data.matrix(matrix_targets_test)
 # Function to build the model
 build_model <- function() {
   model <- keras_model_sequential() %>%
+    #layer_batch_normalization(axis = -1L, input_shape = dim(train_data)[[2]]) %>%
     layer_dense(units = 64, activation = "relu", input_shape = dim(train_data)[[2]]) %>%
     layer_dense(units = 128, activation = "relu") %>%
     layer_dense(units = 64, activation = "relu") %>%
     layer_dense(units = 8, activation = "softmax") 
 
   model %>% compile(
-    optimizer = "rmsprop",
-    loss = loss_categorical_crossentropy(),
+    optimizer = optimizer_sgd(learning_rate = 0.2),
+    loss = "categorical_crossentropy",
     metrics = "categorical_accuracy"
   )
 
 }
 ```
-
-## Train model
+## K-Fold-Validation
 ```{r}
 # mean <- apply(matrix_data, 2, mean)
 # std <- apply(matrix_data, 2, sd)
@@ -429,7 +366,7 @@ build_model <- function() {
 # train_targets <- matrix_targets
 
 
-k <- 5
+k <- 10
 indices <- sample(1:nrow(train_data))
 folds <- cut(indices, breaks = k, labels = FALSE)
 
@@ -439,8 +376,8 @@ for (i in 1:k) {
   cat("processing fold #", i, "\n")
 
   val_indices <- which(folds == i, arr.ind = TRUE)
-  val_data <- test_data#train_data[val_indices,]
-  val_targets <- test_targets#train_targets[val_indices,]
+  val_data <- train_data[val_indices,] #test_data#
+  val_targets <- train_targets[val_indices,] #test_targets#
   
   partial_train_data <- train_data[-val_indices,]
   partial_train_targets <- train_targets[-val_indices,]
@@ -455,9 +392,9 @@ for (i in 1:k) {
   history <- model %>% fit(
     partial_train_data, partial_train_targets,
     validation_data = list(val_data, val_targets),
-    epochs = num_epochs, batch_size = 64, verbose = 1
+    epochs = num_epochs, batch_size = 512, verbose = 1
   )
-  acc_history <- history$metrics$val_accuracy
+  acc_history <- history$metrics$val_categorical_accuracy
   all_acc_histories <- rbind(all_acc_histories, acc_history)
 }
 
@@ -465,7 +402,7 @@ for (i in 1:k) {
 #reticulate::py_last_error()
 ```
 
-#We can then compute the average of the per-epoch MAE scores for all folds:
+#We can then compute the average of the per-epoch ACC scores for all folds:
 
 ```{r}
 average_acc_history <- data.frame(
@@ -474,9 +411,9 @@ average_acc_history <- data.frame(
 )
 
 #Schreibe Ergebnis in csv, bitte den Namen abändern
-#write.csv(average_mae_history, "../Doc/Versuch 1/Try 1.csv", row.names=FALSE)
+#write.csv(average_acc_history, "../Doc/Versuch 3/Try 3.csv", row.names=FALSE)
 
-average_acc_history
+max(average_acc_history$validation_acc)
 
 library(ggplot2)
 ggplot(average_acc_history, aes(x = epoch, y = validation_acc)) + geom_line()
@@ -484,6 +421,9 @@ ggplot(average_acc_history, aes(x = epoch, y = validation_acc)) + geom_line()
 #It may be a bit hard to see the plot due to scaling issues and relatively high variance. Let's use `geom_smooth()` to try to get a clearer picture:
 ggplot(average_acc_history, aes(x = epoch, y = validation_acc)) + geom_smooth()
 
+# Evaluate on Testset
+eval <- evaluate(model, test_data, test_targets, verbose = 1)
+eval
 ```
 
 ```{r}
