@@ -392,7 +392,7 @@ for (i in 1:k) {
   history <- model %>% fit(
     partial_train_data, partial_train_targets,
     validation_data = list(val_data, val_targets),
-    epochs = num_epochs, batch_size = 512, verbose = 1
+    epochs = num_epochs, batch_size = 128, verbose = 1
   )
   acc_history <- history$metrics$val_categorical_accuracy
   all_acc_histories <- rbind(all_acc_histories, acc_history)
@@ -410,8 +410,6 @@ average_acc_history <- data.frame(
   validation_acc = apply(all_acc_histories, 2, mean)
 )
 
-#Schreibe Ergebnis in csv, bitte den Namen abändern
-#write.csv(average_acc_history, "../Doc/Versuch 3/Try 3.csv", row.names=FALSE)
 
 max(average_acc_history$validation_acc)
 
@@ -424,6 +422,15 @@ ggplot(average_acc_history, aes(x = epoch, y = validation_acc)) + geom_smooth()
 # Evaluate on Testset
 eval <- evaluate(model, test_data, test_targets, verbose = 1)
 eval
+
+# Save model and history, please change the name
+# write.csv(average_acc_history, "../Doc/Versuch 3/Try 3.csv", row.names=FALSE)
+# save_model_hdf5(model, "../Doc/Versuch 3/model 3.hfd5", overwrite = TRUE, include_optimizer = TRUE)
+
+# Load model
+# Use model_history as precaution
+# model_history <- load_model_hdf5("../Doc/Versuch 3/model 3.hfd5", custom_objects = NULL, compile = TRUE)
+
 ```
 
 ```{r}
