@@ -4,6 +4,9 @@ cleaning <- read.csv("../Data/New_Data.csv", row.names=NULL,sep = ";" )
 which(is.na(cleaning$annual_inc)== TRUE)
 
 library(dplyr)
+library(tidymodels)
+library(themis)
+library(gridExtra)
 
 cleaning <- cleaning %>% 
   filter(!(is.na(annual_inc))) %>% 
@@ -89,7 +92,6 @@ unique(cleaning$emp_length)
 cleaning %>% filter(emp_length=="n/a")
 temp<-cleaning %>% filter(emp_length=="n/a")
 temp2<-cleaning %>% filter(annual_inc_merged<100000)
-substr(cleaning$issue_d,5,8)
 unique(substr(cleaning$issue_d,5,8))
 
 cleaning <- cleaning %>% mutate( 
@@ -144,7 +146,7 @@ final_model <- final_res$.workflow[[1]]
 
 # enrich predictions with train / test classifier and the absolute error AE to produce separated graphs
 all_predictions <- bind_rows(
-  augment(final_model, new_data =   )  %>% 
+  augment(final_model, new_data = lcdata  )  %>% 
     mutate(type = "validation") %>% 
   mutate(AE = abs(.pred-int_rate)))
 

@@ -1,14 +1,23 @@
 ---
 title: "Data Cleaning LCdata"
+author: "Group1"
+date: "2022-12-29"
 output:
-  pdf_document: default
-  html_document: default
-date: "2022-11-16"
+  pdf_document: 
+    toc: true
+    toc_depth: 3
+  html_document: 
+    toc: true
+    toc_depth: 3
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(dev = 'png')
+```
 ```{r}
 getwd()
-cleaning <- read.csv("../../Data/In/Project/LCdata.csv", row.names=NULL,sep = ";" )
-?read.csv # question mark is for Help which means when you want to see what a code means or for example the parameters 
+cleaning <- read.csv("../Data/In/Project/LCdata.csv", row.names=NULL,sep = ";" )
 library(dplyr)
 library(ggplot2)
 summary(cleaning)
@@ -398,10 +407,6 @@ ggplot(data = cleaning, mapping = aes(x=int_rate,y=purpose))+geom_boxplot()
 
 
 
-```{r}
-saveRDS(cleaning, "../../Data/Out/cleanData.rds")
-```
-
 
 So for the modeling part, we want to check first each column with the cleaned dataset. Especially how they correlate to the interest rate which we want to predict. The findings here can be taken into account when building a model. But we have to keep in mind that it is possible for there to be a correlation between two columns in a linear regression model but no significance in xgboost. This can happen if the relationship between the two columns is non-linear and xgboost is better able to model non-linear relationships than linear regression. And vize versa. 
 
@@ -616,6 +621,16 @@ ggplot(data=cleaning, aes(x=int_rate, y=inq_last_12m)) +
 
 
 ```
+
+```{r}
+#Save final file for the use in the regression model
+cleaning <- data.frame(cleaning %>% dplyr::select(int_rate,loan_amnt, term,installment,home_ownership, verification_status,purpose, annual_inc_merged, dti_merged, revol_util,revol_bal)) 
+saveRDS(cleaning, "../Data/Out/cleanData.rds")
+```
+
 #Conclusion
 In the context of crowdlending, it is important to practice diversification in order to mitigate risk. For example, if you have 20,000 to invest and you put it all into two projects, and one of them defaults (meaning it is more than 120 days late on payments), you will suffer significant losses. However, if you distribute your 20,000 across 200 projects and one of them defaults, your losses will be minimized. The overall default rate at Lending Club, a crowdlending platform, is 7%, which is significantly higher than the default rate of approximately 2% in the Swiss market. If you have a large number of retail investors (individuals with limited funds for investment) who are unable to diversify their investments, there is a higher risk of negative reputation due to the higher likelihood of retail investors incurring losses. As a result, Lending Club has recently stopped accepting retail investors and only allows institutional investors, who have sufficient funds to diversify their investments and minimize their losses. The high default rate of 7% at Lending Club suggests that the platform may have been lending money to a wide range of borrowers in order to achieve growth. The net annualized return (NAR), which takes into account the default rate, is 8.28%.
 Upon analyzing the plots of the cleaned dataset, it is apparent that Lending Club did not adequately consider a large portion of the available data in determining interest rates. In particular, individuals who may not have been creditworthy were still granted loans. This suggests that Lending Club's underwriting process may have been insufficient, leading to the decision to only accept institutional investors. This is likely an attempt to mitigate risk and improve the quality of their loans by relying on investors with the resources to perform more thorough evaluations of potential borrowers
+
+
+
