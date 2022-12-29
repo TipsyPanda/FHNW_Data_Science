@@ -162,7 +162,7 @@ preprocRecipe <-
   step_dummy(all_nominal(), -status,  one_hot = TRUE) %>%
   step_range(all_predictors(), -all_nominal(), min = 0, max = 1)%>%
  # step_downsample(status, over_ratio = 1) %>%
-  step_smote(status, over_ratio = 0.5, skip=TRUE) %>%
+  step_smote(status, over_ratio = 1, skip=TRUE) %>%
  # step_smotenc(status, over_ratio = 1) %>%
  #step_adasyn(status, over_ratio = 1) %>%
  #step_nearmiss(status, over_ratio = 1) %>%
@@ -316,8 +316,9 @@ testSet_processed <- preprocRecipe %>%
 # sapply(data, class)
 
 # summarize the class distribution
-percentage <- prop.table(table(data$status)) * 100
+percentage <- 100-prop.table(table(data$status)) * 100
 cbind(freq=table(data$status), percentage=percentage)
+class_weights <- list("0"=1,"1"=100)
 
 # Turn data frame into data matrix
 matrix_data <- trainingSet_processed %>% select(-tail(names(trainingSet_processed), 8))
@@ -345,8 +346,9 @@ build_model <- function() {
   model <- keras_model_sequential() %>%
     #layer_batch_normalization(axis = -1L, input_shape = dim(train_data)[[2]]) %>%
     layer_dense(units = 64, activation = "relu", input_shape = dim(train_data)[[2]]) %>%
-    layer_dense(units = 128, activation = "relu") %>%
+    layer_dropout(0.3) %>%
     layer_dense(units = 64, activation = "relu") %>%
+    layer_dropout(0.3) %>%
     layer_dense(units = 8, activation = "softmax") 
 
   model %>% compile(
@@ -392,7 +394,7 @@ for (i in 1:k) {
   history <- model %>% fit(
     partial_train_data, partial_train_targets,
     validation_data = list(val_data, val_targets),
-    epochs = num_epochs, batch_size = 128, verbose = 1
+    epochs = num_epochs, batch_size = 128, verbose = 2, class_weights = percentage
   )
   acc_history <- history$metrics$val_categorical_accuracy
   all_acc_histories <- rbind(all_acc_histories, acc_history)
