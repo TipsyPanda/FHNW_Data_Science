@@ -147,7 +147,7 @@ summary(data)
 # Preprocessing
 ```{r Create a recipe for preproc}
 set.seed(1)
-trainIndex <- initial_split(data, prop = 0.7, strata = status) 
+trainIndex <- initial_split(data, prop = 0.8, strata = status) 
 trainingSet <- training(trainIndex)
 testSet <- testing(trainIndex)
 status_folds <- vfold_cv(trainingSet, v = 10, strata = status)
@@ -168,8 +168,6 @@ preprocRecipe <-
  #step_nearmiss(status, over_ratio = 1) %>%
    
   step_dummy(status,  one_hot = TRUE)# %>%
-
-
 ```
 
 # In this step the above defined receipt is extracted using the `prep()` function, and then use the `bake()` function to transform a set of data based on that recipe.
@@ -185,136 +183,8 @@ testSet_processed <- preprocRecipe %>%
 #summary(trainingSet_processed)
 ```
 
-#OneHotEncoding
-```{r}
-
-# # One-Hot-Encoding for CODE_GENDER
-# dmy <- dummyVars(" ~ CODE_GENDER", data = data)
-# trsf <- data.frame(predict(dmy, newdata = data)) 
-# data <- cbind(data, trsf)
-# data <- data %>% select(-CODE_GENDER)
-# 
-# # One-Hot-Encoding for FLAG_OWN_CAR 
-# dmyCar <- dummyVars(" ~ FLAG_OWN_CAR", data = data)
-# trsfCar <- data.frame(predict(dmyCar, newdata = data))
-# data <- cbind(data, trsfCar)
-# data <- data %>% select(-FLAG_OWN_CAR)
-# 
-# # One-Hot-Encoding for FLAG_OWN_REALTY   
-# dmyRealty <- dummyVars(" ~ FLAG_OWN_REALTY", data = data)
-# trsfRealty <- data.frame(predict(dmyRealty, newdata = data))
-# data <- cbind(data, trsfRealty)
-# data <- data %>% select(-FLAG_OWN_REALTY)
-# 
-# # One-Hot-Encoding for NAME_INCOME_TYPE   
-# dmyNIT <- dummyVars(" ~ NAME_INCOME_TYPE", data = data)
-# trsfNIT <- data.frame(predict(dmyNIT, newdata = data))
-# data <- cbind(data, trsfNIT)
-# data <- data %>% select(-NAME_INCOME_TYPE)
-# 
-# # Factoring NAME_EDUCATION_TYPE as it is ordinal
-# # unique(data$NAME_EDUCATION_TYPE)
-# # "Secondary / secondary special", "Higher education", "Incomplete higher", "Lower secondary", "Academic degree"
-# # Ranking:
-# # 'Lower secondary', 'Secondary / secondary special', 'Incomplete higher', 'Higher education', 'Academic degree'
-# data$NAME_EDUCATION_TYPE <- as.numeric(factor(data$NAME_EDUCATION_TYPE, order=TRUE, levels=c('Lower secondary', 'Secondary / secondary special', 'Incomplete higher', 'Higher education', 'Academic degree')))
-# #dmyNET <- dummyVars(" ~ NAME_EDUCATION_TYPE", data = data)
-# #trsfNET <- data.frame(predict(dmyNET, newdata = data))
-# #data <- cbind(data, trsfNET)
-# #data <- data %>% select(-NAME_EDUCATION_TYPE)
-# 
-# # One-Hot-Encoding for NAME_FAMILY_STATUS   
-# dmyNFS <- dummyVars(" ~ NAME_FAMILY_STATUS", data = data)
-# trsfNFS <- data.frame(predict(dmyNFS, newdata = data))
-# data <- cbind(data, trsfNFS)
-# data <- data %>% select(-NAME_FAMILY_STATUS)
-# 
-# # One-Hot-Encoding for NAME_HOUSING_TYPE   
-# dmyNHT <- dummyVars(" ~ NAME_HOUSING_TYPE", data = data)
-# trsfNHT <- data.frame(predict(dmyNHT, newdata = data))
-# data <- cbind(data, trsfNHT)
-# data <- data %>% select(-NAME_HOUSING_TYPE)
-# 
-# # Remove FLAG_MOBIL, it is always 1
-# #data <- data %>% select(-FLAG_MOBIL)
-# 
-# # One-Hot-Encoding for FLAG_WORK_PHONE  
-# # Not needed, already 1 or 0
-# # dmyFWP <- dummyVars(" ~ FLAG_WORK_PHONE", data = data)
-# # trsfFWP <- data.frame(predict(dmyFWP, newdata = data))
-# # data <- cbind(data, trsfFWP)
-# # data <- data %>% select(-FLAG_WORK_PHONE)
-# 
-# # One-Hot-Encoding for FLAG_PHONE  
-# # Not needed, already 1 or 0
-# # dmyFP <- dummyVars(" ~ FLAG_PHONE", data = data)
-# # trsfFP <- data.frame(predict(dmyFP, newdata = data))
-# # data <- cbind(data, trsfFP)
-# # data <- data %>% select(-FLAG_PHONE)
-# 
-# # One-Hot-Encoding for FLAG_EMAIL 
-# # Not needed, already 1 or 0
-# # dmyFE <- dummyVars(" ~ FLAG_EMAIL", data = data)
-# # trsfFE <- data.frame(predict(dmyFE, newdata = data))
-# # data <- cbind(data, trsfFE)
-# # data <- data %>% select(-FLAG_EMAIL)
-# 
-# # One-Hot-Encoding for OCCUPATION_TYPE
-# #data$OCCUPATION_TYPE
-# #levels(data$OCCUPATION_TYPE)
-# levels(data$OCCUPATION_TYPE) <- c(levels(data$OCCUPATION_TYPE), "Unknown")
-# data$OCCUPATION_TYPE[is.na(data$OCCUPATION_TYPE)] <- "Unknown"
-# dmyOT <- dummyVars(" ~ OCCUPATION_TYPE ", data = data)
-# trsfOT <- data.frame(predict(dmyOT, newdata = data))
-# data <- cbind(data, trsfOT)
-# data <- data %>% select(-OCCUPATION_TYPE )
-# 
-# #summary(data)
-# 
-# ### Normalizing data
-# 
-# ## Does not work for single columns
-# # preprocessParams <- preProcess(data$CNT_CHILDREN, method=c("center", "scale"))
-# # summarize transform parameters
-# # print(preprocessParams)
-# # transform the dataset using the parameters
-# # transformed <- predict(preprocessParams, iris[,1:4])
-# 
-# ## Does not work for single columns
-# # mean <- apply(data, 2, mean)
-# # std <- apply(data, 2, sd)
-# # dataScaled <- scale(data$CNT_CHILDREN, center = mean, scale = std)
-# 
-# # ## Based on https://www.learnbymarketing.com/tutorials/neural-networks-in-r-tutorial/
-# # #Might not be needed if done in preprocessing 
-# # data$CNT_CHILDREN <- (data$CNT_CHILDREN-min(data$CNT_CHILDREN)) / (max(data$CNT_CHILDREN)-min(data$CNT_CHILDREN))
-# # data$DAYS_BIRTH <- (data$DAYS_BIRTH-min(data$DAYS_BIRTH)) / (max(data$DAYS_BIRTH)-min(data$DAYS_BIRTH))
-# # data$DAYS_EMPLOYED <- (data$DAYS_EMPLOYED-min(data$DAYS_EMPLOYED)) / (max(data$DAYS_EMPLOYED)-min(data$DAYS_EMPLOYED))
-# # data$CNT_FAM_MEMBERS <- (data$CNT_FAM_MEMBERS-min(data$CNT_FAM_MEMBERS)) / (max(data$CNT_FAM_MEMBERS)-min(data$CNT_FAM_MEMBERS))
-# 
-# # ggplot(data = data, mapping = aes(x = ID, y = AMT_INCOME_TOTAL)) + geom_point()
-# # heavily right skewed, but NN should not be affected by it
-# #data$AMT_INCOME_TOTAL <- (data$AMT_INCOME_TOTAL-min(data$AMT_INCOME_TOTAL)) / (max(data$AMT_INCOME_TOTAL)-min(data$AMT_INCOME_TOTAL))
-# 
-# summary(data)
-```
-
 ## Check data
 ```{r}
-# dim(data)
-# sapply(data, class)
-# levels(data$status)
-# 
-# #Replace C and X in status
-# #data$status[data$status == "C"] <- 6
-# levels(data$status)[levels(data$status)=="C"] <- "6"
-# #data$status[data$status == "X"] <- 7
-# levels(data$status)[levels(data$status)=="X"] <- "7"
-# #Convert factors into numericals
-# data %<>% mutate_if(is.factor, as.numeric)
-# levels(data$status)
-# sapply(data, class)
-
 # summarize the class distribution
 percentage <- 100-prop.table(table(data$status)) * 100
 cbind(freq=table(data$status), percentage=percentage)
@@ -322,8 +192,6 @@ class_weights <- list("0"=1,"1"=100)
 
 # Turn data frame into data matrix
 matrix_data <- trainingSet_processed %>% select(-tail(names(trainingSet_processed), 8))
-#matrix_data <- subset(data, select = c(CNT_CHILDREN, AMT_INCOME_TOTAL))
-#matrix_targets <- data.matrix(trainingSet_processed[])
 matrix_targets <- trainingSet_processed %>% select(tail(names(trainingSet_processed), 8))
 
 matrix_data_test  <- testSet_processed %>% select(-tail(names(testSet_processed), 8))
@@ -433,56 +301,4 @@ eval
 # Use model_history as precaution
 # model_history <- load_model_hdf5("../Doc/Versuch 3/model 3.hfd5", custom_objects = NULL, compile = TRUE)
 
-```
-
-```{r}
-# all_scores
-# mean(all_scores)
-```
-
-
-```{r}
-  ## Take Model1 and Scale data
-  ##scale and preprocess training and test data
-  #library(caret)
-  pre_proc_val <- preProcess(train, method = c("center", "scale"))  
-  train = predict(pre_proc_val, train)
-  test = predict(pre_proc_val, test)
-  train <- tensor_slices_dataset(train)
-  test <- tensor_slices_dataset(test)
-  summary(train)
-  
-```
-
-
-```{r, results='hide'}
-library(keras)
-#https://www.tensorflow.org/tutorials/structured_data/feature_columns
-
-#center and scale --> min max
-#one hot encoding
-# Matrix and vector
-
-# model = tf.keras.Sequential([
-#   feature_layer,
-#   layers.Dense(128, activation='relu'),
-#   layers.Dense(128, activation='relu'),
-#   layers.Dropout(.1),
-#   layers.Dense(1)
-# ])
-# 
-# model.compile(optimizer='adam',
-#               loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
-#               metrics=['accuracy'])
-# 
-# model.fit(train_ds,
-#           validation_data=val_ds,
-#           epochs=10)
-
-```
-
-
-
-```{r}
-str(train_data[[1]])
 ```
