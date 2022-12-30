@@ -153,7 +153,26 @@ testSet <- testing(trainIndex)
 status_folds <- vfold_cv(trainingSet, v = 10, strata = status)
 status_folds
 ```
+```{r}
+# Remove outliers (Out of 1.5x Interquartile Range) only on training set
+# CNT_CHILDREN
+boxplot(trainingSet$CNT_CHILDREN, horizontal=TRUE, main="CNT_CHILDREN")
+Q1_Child <- quantile(trainingSet$CNT_CHILDREN, .25)
+Q3_Child <- quantile(trainingSet$CNT_CHILDREN, .75)
+IQR_Child <- IQR(trainingSet$CNT_CHILDREN)
+# Now we keep the values within 1.5*IQR of Q1 and Q3
+trainingSet <- subset(trainingSet, trainingSet$CNT_CHILDREN > (Q1_Child - 1.5*IQR_Child) & trainingSet$CNT_CHILDREN < (Q3_Child + 1.5*IQR_Child))
+dim(trainingSet)
 
+# AMT_INCOME_TOTAL
+boxplot(trainingSet$AMT_INCOME_TOTAL, horizontal=TRUE, main="AMT_INCOME_TOTAL")
+Q1_AIT <- quantile(trainingSet$AMT_INCOME_TOTAL, .25)
+Q3_AIT <- quantile(trainingSet$AMT_INCOME_TOTAL, .75)
+IQR_AIT <- IQR(trainingSet$AMT_INCOME_TOTAL)
+# Now we keep the values within 1.5*IQR of Q1 and Q3
+trainingSet <- subset(trainingSet, trainingSet$AMT_INCOME_TOTAL > (Q1_AIT - 1.5*IQR_AIT) & trainingSet$AMT_INCOME_TOTAL < (Q3_AIT + 1.5*IQR_AIT))
+dim(trainingSet)
+```
 
 ```{r Create a recipe for preproc2}
 set.seed(5)
