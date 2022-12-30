@@ -23,6 +23,9 @@ library(ggplot2)
 summary(cleaning)
 
 ```
+#NA - Cleaning
+
+
 To locate rows in a specific column containing NA values, you can use the which() function in conjunction with the dplyr library. To use this library, you can press Alt+Shift+M to call it. This library is widely used and can be easily found by searching for it. By selecting the appropriate column and adding the argument TRUE to the which() function, you can identify the rows containing NA values.
 
 
@@ -31,6 +34,9 @@ During the data cleaning process, I chose to use the dplyr library to select the
 The mutate() function allows for the creation of new variables while preserving existing ones. In this case, I created a new column called _cat. The ifelse() function was then used to transform the months since delinq data into the _cat column. By inspecting the months since delinq data in a histogram, I observed that it ranged up to 500 months. Grouping this data was a subjective process that required business knowledge.
 
 After grouping the data with the ifelse() function, it was necessary to convert the resulting categories into numeric values using the mutate() function. This allowed for further analysis and manipulation of the data.
+
+
+##Delete columns 
 ```{r}
 which(is.na(cleaning$annual_inc)== TRUE)
 
@@ -62,7 +68,7 @@ One column, delinq_2_years, contained 21 NA values. The values in this column ra
 
 The revol_bal column contained only 2 NA values, which could be easily removed by deleting the corresponding rows. The revol_util column, on the other hand, contained 429 NA values, which represented a relatively small proportion of the overall dataset of 800,000 entries. Similarly, the collections_12_mths_ex_med column contained 101 NA values, which could also be considered negligible in relation to the size of the dataset.
 
-#Summary of NA's
+##Summary of NA's
 
 Now to the cases that have more than 1k NA's which should not be deleted, are the following:
 
@@ -94,7 +100,7 @@ ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_record))+geom
 ```
 After visualizing the data through plotting, no significant correlation was observed. As a result, an alternative approach to analyzing the data may be to try categorizing the variables in order to identify any potential patterns or trends. This method of analysis involves dividing the data into discrete groups or categories based on certain characteristics or attributes, and can be useful for identifying relationships between variables that may not be immediately apparent through other means. It is important to carefully consider the chosen criteria for categorization and to ensure that the resulting categories are meaningful and relevant to the research question at hand.
 
-#Cleaning of mths_since_last_record
+###Cleaning of mths_since_last_record
 ```{r}
 #cleaning aproach for mths_since_last_record: These NA's seem to never have had a record in a debt enforcement office which is good. So the number should be zero.
 
@@ -117,7 +123,7 @@ ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_record_cat))+
 ```
 The results of the analysis are surprising, as there is only a minor and insignificant difference in the interest rate between individuals with no entries in a public register and those with a record of negative entries. This suggests that the presence or absence of such entries has little impact on the interest rate, and raises questions about the underwriting practices of Lending Club. It is possible that these factors are not being properly considered in the underwriting process, which may contribute to the company's current status. Further investigation may be necessary to understand the underlying causes of these unexpected results.
 
-#Cleaning of mths_since_last_major_derog
+###Cleaning of mths_since_last_major_derog
 ```{r}
 
 #Plotting uncleaned mths_since_last_major_derog
@@ -145,7 +151,7 @@ ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_major_derog_c
 The analysis of the "derog" variable yielded similar results to those obtained for the "last record" variable, in that there is little difference in the interest rate between individuals with different levels of derogatory entries. This suggests that the presence or absence of such entries has little impact on the interest rate, which raises concerns about the underwriting practices of Lending Club. The data appears to be unusual and may indicate poor underwriting processes, which could potentially contribute to the company's current status. Further investigation may be necessary to understand the reasons for these unexpected results.
 
 
-#Cleaning of annual_inc_joint and dti_joint
+###Cleaning of annual_inc_joint and dti_joint
 Before cleaning, the data only indicates whether there is a joint income present. This also applies to the "dti" and "dti_joint" variables. In order to accurately represent the income and debt-to-income ratio for each individual, it is necessary to merge the "dti" and "annual_inc" variables with their respective "joint" counterparts, depending on whether the application is individual or joint. This can be accomplished using the ifelse function in the mutate function, which allows us to specify conditions for replacing certain values with others. For example, we can use the ifelse function to replace any empty values in the "address" column with the corresponding value from the "work_address" column. It is important to carefully consider the chosen method for handling missing or incomplete data in order to ensure the accuracy and reliability of the cleaned dataset.
 
 
@@ -167,7 +173,7 @@ cleaning <- cleaning %>% select(-dti,-dti_joint)
 ```
 
 
-#Cleaning of tot_coll_amt
+###Cleaning of tot_coll_amt
 There appears to be a correlation between the interest rate and the total collateral amount, making it worthwhile to clean the relevant column in the dataset. There may be missing values, or "NA's," in this column, which may indicate that these customers either have no debt or do not have any debt when obtaining a loan from LoanClear. In order to accurately represent this information, it may be necessary to replace these missing values with the value "0" to indicate the absence of debt. This will allow for more accurate analysis of the relationship between the interest rate and the total collateral amount. It is important to carefully consider the chosen method for handling missing data in order to ensure the accuracy and reliability of the cleaned dataset.
 
 ```{r}
@@ -188,8 +194,8 @@ ggplot(data = cleaning, mapping = aes(x=int_rate,y=tot_coll_amt))+geom_point(alp
 
 ggplot(data = cleaning, mapping = aes(x=int_rate,y=tot_coll_amt))+geom_boxplot()
 ```
-#Cleaning of tot_cur_bal 
-#Outliers here as well
+###Cleaning of tot_cur_bal 
+Outliers here as well
 ```{r}
 #Plotting uncleaned tot_cur_bal
 
@@ -210,8 +216,7 @@ ggplot(data = cleaning, mapping = aes(x=int_rate,y=tot_cur_bal))+geom_boxplot()
 
 ```
 
-#Cleaning of open_acc_6m, open_il_6m, open_il_12m, open_il_24m
-#mths_since_rcnt_il, total_bal_il, il_util, open_rv_12m, open_rv_24m, total_rev_hi_lim, max_bal_bc, all_util,  inq_fi, total_cu_tl, inq_last_12m
+###Cleaning of open_acc_6m, open_il_6m, open_il_12m, open_il_24m, mths_since_rcnt_il, total_bal_il, il_util, open_rv_12m, open_rv_24m, total_rev_hi_lim, max_bal_bc, all_util,  inq_fi, total_cu_tl, inq_last_12m
 ```{r}
 
 cleaning <- cleaning %>%                                                mutate(
@@ -234,7 +239,7 @@ cleaning <- cleaning %>%                                                mutate(
 ```
 
 
-#Changing the ones with characters to factors 
+#Changing characters to factors 
 In data cleaning, it is often necessary to convert variables that contain characters into a "factor" data type. Factors are a special data type in R that are used to represent categorical variables, which are variables that can take on a limited number of values. Factors are particularly useful when working with data that contains text values, such as "male" or "female," as they allow you to easily group and analyze the data based on these categories. When you "factorize" a column that contains characters, you are essentially creating a factor object from the character data, which allows you to more easily manipulate and analyze the data. Factors are typically created using the factor function in R, which allows you to specify the levels, or possible values, of the factor and assign a numerical value to each level. Factors are an important tool in data cleaning and analysis, as they allow you to more easily work with categorical data and draw meaningful conclusions from your data.
 
 
@@ -261,8 +266,7 @@ cleaning <- cleaning %>% select(-verification_status_joint, -application_type)
 
 
 
-#Cleaning of emp_lenght
-#Cleaning of issue_d
+##Cleaning of emp_lenght and issue_d
 
 In this code, we are examining a dataset called "cleaning" and performing some data cleaning and exploration. The first step is to identify the unique values in the "emp_length" column using the "unique" function. We then use the "filter" function to create a new dataset called "temp" that only includes rows where the "emp_length" value is "n/a."
 
@@ -318,6 +322,7 @@ ggplot(data = cleaning, mapping = aes(x=int_rate,y=year_group))+geom_boxplot()
  
 ```
 
+##Cleaning of plicy code
 There is only policy code 1, therefore delete the column
 ```{r}
 ggplot(data = cleaning, mapping = aes(x=int_rate,y=policy_code))+geom_boxplot()
@@ -326,7 +331,7 @@ cleaning <- cleaning %>% select(-policy_code)
 ```
 
 
-#Cleaning of home_ownership
+##Cleaning of home_ownership
 During the data cleaning process, we observed that the "home_ownership" variable does not appear to exhibit a clear correlation with interest rates. Specifically, the categories "ANY" and "OTHER" contain 2 and 154 cases, respectively, while the category "NONE" contains 39 cases. While the "NONE" category appears to have a higher interest rate than the other categories, the small sample size of 39 cases raises concerns about the validity of this observation. It is worth noting that the "NONE" category may potentially be associated with individuals who are homeless, which raises ethical considerations about granting loans to this population. Therefore, it is recommended to factorize the "home_ownership" column and rerun the analysis to ensure that deleted rows are not retained.
 ```{r}
 ggplot(data = cleaning, mapping = aes(x=int_rate,y=home_ownership))+geom_boxplot()
@@ -338,7 +343,7 @@ cleaning <- cleaning %>% filter(home_ownership %in% c("MORTGAGE","OWN","RENT") )
 cleaning$home_ownership <- as.factor(cleaning$home_ownership)
 ```
 
-#Delete column zip code
+##Delete column zip code
 "The "character" column contains an excessive number of unique values, making it difficult to accurately categorize the data. As a result, it is advisable to remove this column from the dataset to avoid introducing unnecessary complexity into the analysis."
 
 ```{r}
@@ -346,7 +351,9 @@ cleaning <- cleaning %>% select(-zip_code)
 
 ```
 
-Merge column addr_state. A common way of referring to regions in the United States is grouping them into 5 regions according to their geographic position on the continent: the Northeast:PA, NY, NJ, CT, RI, MA, VT, NH, ME, DE, MD
+##Merge column addr_state 
+
+A common way of referring to regions in the United States is grouping them into 5 regions according to their geographic position on the continent: the Northeast:PA, NY, NJ, CT, RI, MA, VT, NH, ME, DE, MD
 Southwest:AZ, CA, CO, NV, NM, UT
 Northwest: ID, MT, OR, WA, WI, AK
 Southeast:AL, FL, GA, KY, MS, SC, NC, TN, VA, WV
@@ -372,19 +379,14 @@ cleaning <- cleaning %>% mutate(
    cleaning$region <- as.factor(cleaning$region)
 ```
 
+##Cleaning of earliest_cr_line
 Last but not least just deleting earliest_cr_line because that information is already covered through colums like inquieries, employed since and so on. 
 
 ```{r}
 cleaning <- cleaning %>% select(-earliest_cr_line)
 ```
 
-
-```{r}
-summary(cleaning)
-
-```
-
-
+##Cleaning of emp_length
 
 ```{r}
 ggplot(data = cleaning, mapping = aes(x=int_rate,y=emp_length))+geom_boxplot()
@@ -398,6 +400,7 @@ First we thought about cleaning emp_length because it still has 236966 n/a's. Bu
 cleaning <- cleaning %>% select(-emp_length)
 ```
 
+##Inspecting purpose
 Checking if other in purpose is really just other or n/a. It is other! and the whole purpose is important for the interest, seen when plotting it. 
 
 ```{r}
@@ -405,222 +408,19 @@ ggplot(data = cleaning, mapping = aes(x=int_rate,y=purpose))+geom_boxplot()
 
 ```
 
+After seeing the results, it looks like the purpose does have an impact on the interest
+
+
+#See results of the cleaning process
+```{r}
+summary(cleaning)
+
+```
+The data is cleaned now and can be used for the next part which is modeling
 
 
 
 So for the modeling part, we want to check first each column with the cleaned dataset. Especially how they correlate to the interest rate which we want to predict. The findings here can be taken into account when building a model. But we have to keep in mind that it is possible for there to be a correlation between two columns in a linear regression model but no significance in xgboost. This can happen if the relationship between the two columns is non-linear and xgboost is better able to model non-linear relationships than linear regression. And vize versa. 
-
-
-```{r}
-
-ggplot(data = cleaning, mapping = aes(x=int_rate,y=term))+geom_boxplot()
-ggplot(data = cleaning, mapping = aes(x=int_rate,y=home_ownership))+geom_boxplot()
-ggplot(data = cleaning, mapping = aes(x=int_rate,y=purpose))+geom_boxplot()
-ggplot(data = cleaning, mapping = aes(x=int_rate,y=verification_status))+geom_boxplot()
-ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_delinq_cat))+geom_boxplot()
-ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_record_cat))+geom_boxplot()
-ggplot(data = cleaning, mapping = aes(x=int_rate,y=mths_since_last_major_derog_cat))+geom_boxplot()
-ggplot(data = cleaning, mapping = aes(x=int_rate,y=annual_inc_merged))+geom_boxplot()
-ggplot(data = cleaning, mapping = aes(x=int_rate,y=dti_merged))+geom_boxplot()
-ggplot(data = cleaning, mapping = aes(x=int_rate,y=year_group))+geom_boxplot()
-ggplot(data = cleaning, mapping = aes(x=int_rate,y=region))+geom_boxplot()
-
-
-
-
-
-
-ggplot(data=cleaning, aes(x=int_rate, y=loan_amnt)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=loan_amnt)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=installment)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=installment)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=delinq_2yrs)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=delinq_2yrs)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=inq_last_6mths)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=inq_last_6mths)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=open_acc)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=open_acc)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-
-ggplot(data=cleaning, aes(x=int_rate, y=pub_rec)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=pub_rec)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-
-ggplot(data=cleaning, aes(x=int_rate, y=revol_bal)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=revol_bal)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=revol_util)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=revol_util)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=total_acc)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=total_acc)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=initial_list_status)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=initial_list_status)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=out_prncp)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=out_prncp)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=out_prncp_inv)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=out_prncp_inv)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=collections_12_mths_ex_med)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=collections_12_mths_ex_med)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=acc_now_delinq)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=acc_now_delinq)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=tot_coll_amt)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=tot_coll_amt)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=tot_cur_bal)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=tot_cur_bal)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=open_acc_6m)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=open_acc_6m)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=open_il_6m)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=open_il_6m)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=open_il_12m)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=open_il_12m)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=open_il_24m)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=open_il_24m)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=mths_since_rcnt_il)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=mths_since_rcnt_il)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=total_bal_il)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=total_bal_il)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=il_util)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=il_util)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=open_rv_12m)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=open_rv_12m)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=open_rv_24m)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=open_rv_24m)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=max_bal_bc)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=max_bal_bc)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=all_util)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=all_util)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=total_rev_hi_lim)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=total_rev_hi_lim)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=inq_fi)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=inq_fi)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=total_cu_tl)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=total_cu_tl)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-ggplot(data=cleaning, aes(x=int_rate, y=inq_last_12m)) +
-  geom_point()
-ggplot(data=cleaning, aes(x=int_rate, y=inq_last_12m)) +
-  geom_point() +
-  geom_smooth(method=lm)
-
-
-
-```
 
 ```{r}
 #Save final file for the use in the regression model
@@ -631,6 +431,5 @@ saveRDS(cleaning, "../Data/Out/cleanData.rds")
 #Conclusion
 In the context of crowdlending, it is important to practice diversification in order to mitigate risk. For example, if you have 20,000 to invest and you put it all into two projects, and one of them defaults (meaning it is more than 120 days late on payments), you will suffer significant losses. However, if you distribute your 20,000 across 200 projects and one of them defaults, your losses will be minimized. The overall default rate at Lending Club, a crowdlending platform, is 7%, which is significantly higher than the default rate of approximately 2% in the Swiss market. If you have a large number of retail investors (individuals with limited funds for investment) who are unable to diversify their investments, there is a higher risk of negative reputation due to the higher likelihood of retail investors incurring losses. As a result, Lending Club has recently stopped accepting retail investors and only allows institutional investors, who have sufficient funds to diversify their investments and minimize their losses. The high default rate of 7% at Lending Club suggests that the platform may have been lending money to a wide range of borrowers in order to achieve growth. The net annualized return (NAR), which takes into account the default rate, is 8.28%.
 Upon analyzing the plots of the cleaned dataset, it is apparent that Lending Club did not adequately consider a large portion of the available data in determining interest rates. In particular, individuals who may not have been creditworthy were still granted loans. This suggests that Lending Club's underwriting process may have been insufficient, leading to the decision to only accept institutional investors. This is likely an attempt to mitigate risk and improve the quality of their loans by relying on investors with the resources to perform more thorough evaluations of potential borrowers
-
 
 
