@@ -110,8 +110,8 @@ testSet_processed <- preprocRecipe %>%
   prep(testSet) %>%
   bake(testSet)
 
-#write.csv(trainingSet_processed, "../Data/Out/trainingset.csv")
-#write.csv(testSet_processed, "../Data/Out/testset.csv")
+write.csv(trainingSet_processed, "../Data/Out/trainingset.csv")
+write.csv(testSet_processed, "../Data/Out/testset.csv")
 
 ```
 
