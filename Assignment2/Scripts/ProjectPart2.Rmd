@@ -233,9 +233,11 @@ build_model <- function() {
   model <- keras_model_sequential() %>%
     #layer_batch_normalization(axis = -1L, input_shape = dim(train_data)[[2]]) %>%
     layer_dense(units = 64, activation = "relu", input_shape = dim(train_data)[[2]]) %>%
-    layer_dropout(0.3) %>%
     layer_dense(units = 64, activation = "relu") %>%
-    layer_dropout(0.3) %>%
+    #layer_dropout(0.3) %>%
+    layer_dense(units = 64, activation = "relu") %>%
+    layer_dense(units = 64, activation = "relu") %>%
+    layer_dense(units = 64, activation = "relu") %>%
     layer_dense(units = 8, activation = "softmax") 
 
   model %>% compile(
@@ -248,14 +250,8 @@ build_model <- function() {
 ```
 ## K-Fold-Validation
 ```{r}
-# mean <- apply(matrix_data, 2, mean)
-# std <- apply(matrix_data, 2, sd)
-# train_data <- scale(matrix_data, center = mean, scale = std)
-# test_data <- scale(matrix_data, center = mean, scale = std)
-# train_targets <- matrix_targets
 
-
-k <- 10
+k <- 2
 indices <- sample(1:nrow(train_data))
 folds <- cut(indices, breaks = k, labels = FALSE)
 
@@ -281,7 +277,7 @@ for (i in 1:k) {
   history <- model %>% fit(
     partial_train_data, partial_train_targets,
     validation_data = list(val_data, val_targets),
-    epochs = num_epochs, batch_size = 128, verbose = 2, class_weights = percentage
+    epochs = num_epochs, batch_size = 512, verbose = 2#, class_weights = percentage
   )
   acc_history <- history$metrics$val_categorical_accuracy
   all_acc_histories <- rbind(all_acc_histories, acc_history)
@@ -313,11 +309,11 @@ eval <- evaluate(model, test_data, test_targets, verbose = 1)
 eval
 
 # Save model and history, please change the name
-# write.csv(average_acc_history, "../Doc/Versuch 3/Try 3.csv", row.names=FALSE)
-# save_model_hdf5(model, "../Doc/Versuch 3/model 3.hfd5", overwrite = TRUE, include_optimizer = TRUE)
+# write.csv(average_acc_history, "../Doc/Versuch 7 - 6 Layer Smote/Try 7.csv", row.names=FALSE)
+# save_model_hdf5(model, "../Doc/Versuch 7 - 6 Layer Smote/model 7.hfd5", overwrite = TRUE, include_optimizer = TRUE)
 
 # Load model
 # Use model_history as precaution
-# model_history <- load_model_hdf5("../Doc/Versuch 3/model 3.hfd5", custom_objects = NULL, compile = TRUE)
+# model_history <- load_model_hdf5("../Doc/Versuch 6/model 6.hfd5", custom_objects = NULL, compile = TRUE)
 
 ```
