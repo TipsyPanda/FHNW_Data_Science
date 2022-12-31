@@ -114,6 +114,22 @@
 \setcounter{tocdepth}{3}
 \tableofcontents
 }
+\hypertarget{abstract}{%
+\section{Abstract}\label{abstract}}
+
+Data cleaning is an essential preprocessing step in the data analysis
+process. The LCData dataset, from the US-based crowdlender LoanClear, is
+a large dataset that requires extensive cleaning due to the presence of
+many missing values (NA's) and characters. The ultimate goal of this
+task is to create a model that can accurately predict interest rates. To
+achieve this, a thorough data cleaning process will be necessary to
+ensure that the data is accurate and ready for analysis. This may
+involve identifying and correcting errors, filling in missing values,
+and removing any unnecessary or irrelevant data. By completing this data
+cleaning task, we can better understand the underlying trends and
+patterns in the data, and use these insights to develop a more effective
+model for predicting interest rates.
+
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{getwd}\NormalTok{()}
@@ -318,7 +334,8 @@
 ##  NA's   :779525
 \end{verbatim}
 
-\#NA - Cleaning
+\hypertarget{na---cleaning}{%
+\section{NA - Cleaning}\label{na---cleaning}}
 
 To locate rows in a specific column containing NA values, you can use
 the which() function in conjunction with the dplyr library. To use this
@@ -347,7 +364,8 @@ convert the resulting categories into numeric values using the mutate()
 function. This allowed for further analysis and manipulation of the
 data.
 
-\#\#Delete columns
+\hypertarget{delete-columns}{%
+\subsection{Delete columns}\label{delete-columns}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -405,37 +423,55 @@ the collections\_12\_mths\_ex\_med column contained 101 NA values, which
 could also be considered negligible in relation to the size of the
 dataset.
 
-\#\#Summary of NA's
+\hypertarget{summary-of-nas}{%
+\subsection{Summary of NA's}\label{summary-of-nas}}
 
 Now to the cases that have more than 1k NA's which should not be
 deleted, are the following:
 
 mths\_since\_last\_record 675165 The number of months since the last
 public record. mths\_since\_last\_major\_derog 599082 Months since most
-recent 90-day or worse rating annual\_inc\_joint 798156 The combined
-self-reported annual income provided by the co-borrowers during
-registration\\
+recent 90-day or worse rating
+
+annual\_inc\_joint 798156 The combined self-reported annual income
+provided by the co-borrowers during registration\\
 dti\_joint 798158 A ratio calculated using the co-borrowers' total
 monthly payments on the total debt obligations, excluding mortgages and
 the requested LC loan, divided by the co-borrowers' combined
-self-reported monthly income tot\_coll\_amt 63251 Total collection
-amounts ever owed tot\_cur\_bal 63251 Total current balance of all
-accounts open\_acc\_6m 779500 Number of open trades in last 6 months
+self-reported monthly income
+
+tot\_coll\_amt 63251 Total collection amounts ever owed
+
+tot\_cur\_bal 63251 Total current balance of all accounts
+
+open\_acc\_6m 779500 Number of open trades in last 6 months
+
 open\_il\_6m 779500 Number of currently active installment trades
+
 open\_il\_12m 779500 Number of installment accounts opened in past 12
 months open\_il\_24m 779500 Number of installment accounts opened in
 past 24 months mths\_since\_rcnt\_il 780005 Months since most recent
-installment accounts opened total\_bal\_il 779500 Total current balance
-of all installment accounts il\_util 781982 Ratio of total current
-balance to high credit/credit limit on all install acct open\_rv\_12m
-779500 Number of revolving trades opened in past 12 months open\_rv\_24m
-779500\\
+installment accounts opened
+
+total\_bal\_il 779500 Total current balance of all installment accounts
+
+il\_util 781982 Ratio of total current balance to high credit/credit
+limit on all install acct
+
+open\_rv\_12m 779500 Number of revolving trades opened in past 12 months
+
+open\_rv\_24m 779500\\
 total\_rev\_hi\_lim 63251 Total revolving high credit/credit limit
+
 max\_bal\_bc 779500 Maximum current balance owed on all revolving
-accounts all\_util 779500 Balance to credit limit on all trades inq\_fi
-779500 Number of personal finance inquiries total\_cu\_tl 779500 Number
-of finance trades inq\_last\_12m 779500 Number of credit inquiries in
-past 12 months
+
+accounts all\_util 779500 Balance to credit limit on all trades
+
+inq\_fi 779500 Number of personal finance inquiries
+
+total\_cu\_tl 779500 Number of finance trades
+
+inq\_last\_12m 779500 Number of credit inquiries in past 12 months
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -464,6 +500,7 @@ past 12 months
 \end{verbatim}
 
 \includegraphics{Assessment1_DataCleaning_LCData_files/figure-latex/unnamed-chunk-3-2.png}
+
 After visualizing the data through plotting, no significant correlation
 was observed. As a result, an alternative approach to analyzing the data
 may be to try categorizing the variables in order to identify any
@@ -475,7 +512,9 @@ through other means. It is important to carefully consider the chosen
 criteria for categorization and to ensure that the resulting categories
 are meaningful and relevant to the research question at hand.
 
-\#\#\#Cleaning of mths\_since\_last\_record
+\hypertarget{cleaning-of-mths_since_last_record}{%
+\subsubsection{Cleaning of
+mths\_since\_last\_record}\label{cleaning-of-mths_since_last_record}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -507,6 +546,7 @@ are meaningful and relevant to the research question at hand.
 \end{Shaded}
 
 \includegraphics{Assessment1_DataCleaning_LCData_files/figure-latex/unnamed-chunk-4-2.png}
+
 The results of the analysis are surprising, as there is only a minor and
 insignificant difference in the interest rate between individuals with
 no entries in a public register and those with a record of negative
@@ -518,7 +558,9 @@ which may contribute to the company's current status. Further
 investigation may be necessary to understand the underlying causes of
 these unexpected results.
 
-\#\#\#Cleaning of mths\_since\_last\_major\_derog
+\hypertarget{cleaning-of-mths_since_last_major_derog}{%
+\subsubsection{Cleaning of
+mths\_since\_last\_major\_derog}\label{cleaning-of-mths_since_last_major_derog}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -578,6 +620,7 @@ these unexpected results.
 \end{Shaded}
 
 \includegraphics{Assessment1_DataCleaning_LCData_files/figure-latex/unnamed-chunk-5-4.png}
+
 The analysis of the ``derog'' variable yielded similar results to those
 obtained for the ``last record'' variable, in that there is little
 difference in the interest rate between individuals with different
@@ -589,17 +632,20 @@ which could potentially contribute to the company's current status.
 Further investigation may be necessary to understand the reasons for
 these unexpected results.
 
-\#\#\#Cleaning of annual\_inc\_joint and dti\_joint Before cleaning, the
-data only indicates whether there is a joint income present. This also
-applies to the ``dti'' and ``dti\_joint'' variables. In order to
-accurately represent the income and debt-to-income ratio for each
-individual, it is necessary to merge the ``dti'' and ``annual\_inc''
-variables with their respective ``joint'' counterparts, depending on
-whether the application is individual or joint. This can be accomplished
-using the ifelse function in the mutate function, which allows us to
-specify conditions for replacing certain values with others. For
-example, we can use the ifelse function to replace any empty values in
-the ``address'' column with the corresponding value from the
+\hypertarget{cleaning-of-annual_inc_joint-and-dti_joint}{%
+\subsubsection{Cleaning of annual\_inc\_joint and
+dti\_joint}\label{cleaning-of-annual_inc_joint-and-dti_joint}}
+
+Before cleaning, the data only indicates whether there is a joint income
+present. This also applies to the ``dti'' and ``dti\_joint'' variables.
+In order to accurately represent the income and debt-to-income ratio for
+each individual, it is necessary to merge the ``dti'' and
+``annual\_inc'' variables with their respective ``joint'' counterparts,
+depending on whether the application is individual or joint. This can be
+accomplished using the ifelse function in the mutate function, which
+allows us to specify conditions for replacing certain values with
+others. For example, we can use the ifelse function to replace any empty
+values in the ``address'' column with the corresponding value from the
 ``work\_address'' column. It is important to carefully consider the
 chosen method for handling missing or incomplete data in order to ensure
 the accuracy and reliability of the cleaned dataset.
@@ -621,18 +667,22 @@ the accuracy and reliability of the cleaned dataset.
 \end{Highlighting}
 \end{Shaded}
 
-\#\#\#Cleaning of tot\_coll\_amt There appears to be a correlation
-between the interest rate and the total collateral amount, making it
-worthwhile to clean the relevant column in the dataset. There may be
-missing values, or ``NA's,'' in this column, which may indicate that
-these customers either have no debt or do not have any debt when
-obtaining a loan from LoanClear. In order to accurately represent this
-information, it may be necessary to replace these missing values with
-the value ``0'' to indicate the absence of debt. This will allow for
-more accurate analysis of the relationship between the interest rate and
-the total collateral amount. It is important to carefully consider the
-chosen method for handling missing data in order to ensure the accuracy
-and reliability of the cleaned dataset.
+\hypertarget{cleaning-of-tot_coll_amt-there-appears-to-be-a-correlation-between}{%
+\subsubsection{Cleaning of tot\_coll\_amt There appears to be a
+correlation
+between}\label{cleaning-of-tot_coll_amt-there-appears-to-be-a-correlation-between}}
+
+the interest rate and the total collateral amount, making it worthwhile
+to clean the relevant column in the dataset. There may be missing
+values, or ``NA's,'' in this column, which may indicate that these
+customers either have no debt or do not have any debt when obtaining a
+loan from LoanClear. In order to accurately represent this information,
+it may be necessary to replace these missing values with the value ``0''
+to indicate the absence of debt. This will allow for more accurate
+analysis of the relationship between the interest rate and the total
+collateral amount. It is important to carefully consider the chosen
+method for handling missing data in order to ensure the accuracy and
+reliability of the cleaned dataset.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -692,7 +742,10 @@ and reliability of the cleaned dataset.
 \end{verbatim}
 
 \includegraphics{Assessment1_DataCleaning_LCData_files/figure-latex/unnamed-chunk-7-4.png}
-\#\#\#Cleaning of tot\_cur\_bal Outliers here as well
+
+\hypertarget{cleaning-of-tot_cur_bal-outliers-here-as-well}{%
+\subsubsection{Cleaning of tot\_cur\_bal Outliers here as
+well}\label{cleaning-of-tot_cur_bal-outliers-here-as-well}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -753,10 +806,13 @@ and reliability of the cleaned dataset.
 
 \includegraphics{Assessment1_DataCleaning_LCData_files/figure-latex/unnamed-chunk-8-4.png}
 
-\#\#\#Cleaning of open\_acc\_6m, open\_il\_6m, open\_il\_12m,
-open\_il\_24m, mths\_since\_rcnt\_il, total\_bal\_il, il\_util,
-open\_rv\_12m, open\_rv\_24m, total\_rev\_hi\_lim, max\_bal\_bc,
-all\_util, inq\_fi, total\_cu\_tl, inq\_last\_12m
+\hypertarget{cleaning-of-open_acc_6m-open_il_6m-open_il_12m-open_il_24m}{%
+\subsubsection{Cleaning of open\_acc\_6m, open\_il\_6m, open\_il\_12m,
+open\_il\_24m,}\label{cleaning-of-open_acc_6m-open_il_6m-open_il_12m-open_il_24m}}
+
+mths\_since\_rcnt\_il, total\_bal\_il, il\_util, open\_rv\_12m,
+open\_rv\_24m, total\_rev\_hi\_lim, max\_bal\_bc, all\_util, inq\_fi,
+total\_cu\_tl, inq\_last\_12m
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -779,7 +835,10 @@ all\_util, inq\_fi, total\_cu\_tl, inq\_last\_12m
 \end{Highlighting}
 \end{Shaded}
 
-\#Changing characters to factors In data cleaning, it is often necessary
+\hypertarget{changing-characters-to-factors-in-data-cleaning-it-is-often-necessary}{%
+\section{Changing characters to factors In data cleaning, it is often
+necessary}\label{changing-characters-to-factors-in-data-cleaning-it-is-often-necessary}}
+
 to convert variables that contain characters into a ``factor'' data
 type. Factors are a special data type in R that are used to represent
 categorical variables, which are variables that can take on a limited
@@ -821,7 +880,9 @@ unnecessary variability in our analysis.''
 \end{Highlighting}
 \end{Shaded}
 
-\#\#Cleaning of emp\_lenght and issue\_d
+\hypertarget{cleaning-of-emp_lenght-and-issue_d}{%
+\subsection{Cleaning of emp\_lenght and
+issue\_d}\label{cleaning-of-emp_lenght-and-issue_d}}
 
 In this code, we are examining a dataset called ``cleaning'' and
 performing some data cleaning and exploration. The first step is to
@@ -32242,7 +32303,11 @@ and patterns in the data and to conduct more targeted analyses.
 
 \includegraphics{Assessment1_DataCleaning_LCData_files/figure-latex/unnamed-chunk-13-1.png}
 
-\#\#Cleaning of plicy code There is only policy code 1, therefore delete
+\hypertarget{cleaning-of-plicy-code-there-is-only-policy-code-1-therefore-delete}{%
+\subsection{Cleaning of plicy code There is only policy code 1,
+therefore
+delete}\label{cleaning-of-plicy-code-there-is-only-policy-code-1-therefore-delete}}
+
 the column
 
 \begin{Shaded}
@@ -32259,7 +32324,11 @@ the column
 \end{Highlighting}
 \end{Shaded}
 
-\#\#Cleaning of home\_ownership During the data cleaning process, we
+\hypertarget{cleaning-of-home_ownership-during-the-data-cleaning-process-we}{%
+\subsection{Cleaning of home\_ownership During the data cleaning
+process,
+we}\label{cleaning-of-home_ownership-during-the-data-cleaning-process-we}}
+
 observed that the ``home\_ownership'' variable does not appear to
 exhibit a clear correlation with interest rates. Specifically, the
 categories ``ANY'' and ``OTHER'' contain 2 and 154 cases, respectively,
@@ -32288,11 +32357,13 @@ rows are not retained.
 \end{Highlighting}
 \end{Shaded}
 
-\#\#Delete column zip code ``The''character'' column contains an
-excessive number of unique values, making it difficult to accurately
-categorize the data. As a result, it is advisable to remove this column
-from the dataset to avoid introducing unnecessary complexity into the
-analysis.''
+\hypertarget{delete-column-zip-code-thecharacter-column-contains-an-excessive}{%
+\subsection{Delete column zip code ``The''character'' column contains an
+excessive}\label{delete-column-zip-code-thecharacter-column-contains-an-excessive}}
+
+number of unique values, making it difficult to accurately categorize
+the data. As a result, it is advisable to remove this column from the
+dataset to avoid introducing unnecessary complexity into the analysis.''
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -32300,7 +32371,8 @@ analysis.''
 \end{Highlighting}
 \end{Shaded}
 
-\#\#Merge column addr\_state
+\hypertarget{merge-column-addr_state}{%
+\subsection{Merge column addr\_state}\label{merge-column-addr_state}}
 
 A common way of referring to regions in the United States is grouping
 them into 5 regions according to their geographic position on the
@@ -32331,7 +32403,10 @@ South:AR, LA, OK, TX
 \end{Highlighting}
 \end{Shaded}
 
-\#\#Cleaning of earliest\_cr\_line Last but not least just deleting
+\hypertarget{cleaning-of-earliest_cr_line-last-but-not-least-just-deleting}{%
+\subsection{Cleaning of earliest\_cr\_line Last but not least just
+deleting}\label{cleaning-of-earliest_cr_line-last-but-not-least-just-deleting}}
+
 earliest\_cr\_line because that information is already covered through
 colums like inquieries, employed since and so on.
 
@@ -32341,7 +32416,8 @@ colums like inquieries, employed since and so on.
 \end{Highlighting}
 \end{Shaded}
 
-\#\#Cleaning of emp\_length
+\hypertarget{cleaning-of-emp_length}{%
+\subsection{Cleaning of emp\_length}\label{cleaning-of-emp_length}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -32361,7 +32437,11 @@ an impact on the interest. Therefore we delete this column.
 \end{Highlighting}
 \end{Shaded}
 
-\#\#Inspecting purpose Checking if other in purpose is really just other
+\hypertarget{inspecting-purpose-checking-if-other-in-purpose-is-really-just-other}{%
+\subsection{Inspecting purpose Checking if other in purpose is really
+just
+other}\label{inspecting-purpose-checking-if-other-in-purpose-is-really-just-other}}
+
 or n/a. It is other! and the whole purpose is important for the
 interest, seen when plotting it.
 
@@ -32376,7 +32456,9 @@ interest, seen when plotting it.
 After seeing the results, it looks like the purpose does have an impact
 on the interest
 
-\#See results of the cleaning process
+\hypertarget{see-results-of-the-cleaning-process}{%
+\section{See results of the cleaning
+process}\label{see-results-of-the-cleaning-process}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -32504,7 +32586,10 @@ versa.
 \end{Highlighting}
 \end{Shaded}
 
-\#Conclusion In the context of crowdlending, it is important to practice
+\hypertarget{conclusion-in-the-context-of-crowdlending-it-is-important-to-practice}{%
+\section{Conclusion In the context of crowdlending, it is important to
+practice}\label{conclusion-in-the-context-of-crowdlending-it-is-important-to-practice}}
+
 diversification in order to mitigate risk. For example, if you have
 20,000 to invest and you put it all into two projects, and one of them
 defaults (meaning it is more than 120 days late on payments), you will
