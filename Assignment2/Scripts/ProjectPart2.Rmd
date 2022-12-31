@@ -235,7 +235,9 @@ build_model <- function() {
     layer_dense(units = 64, activation = "relu", input_shape = dim(train_data)[[2]]) %>%
     layer_dense(units = 64, activation = "relu") %>%
     #layer_dropout(0.3) %>%
-    layer_dense(units = 64, activation = "relu") %>%
+    layer_dense(units = 128, activation = "relu") %>%
+    layer_dense(units = 256, activation = "relu") %>%
+    layer_dense(units = 128, activation = "relu") %>%
     layer_dense(units = 64, activation = "relu") %>%
     layer_dense(units = 64, activation = "relu") %>%
     layer_dense(units = 8, activation = "softmax") 
@@ -251,7 +253,7 @@ build_model <- function() {
 ## K-Fold-Validation
 ```{r}
 
-k <- 2
+k <- 10
 indices <- sample(1:nrow(train_data))
 folds <- cut(indices, breaks = k, labels = FALSE)
 
@@ -277,7 +279,7 @@ for (i in 1:k) {
   history <- model %>% fit(
     partial_train_data, partial_train_targets,
     validation_data = list(val_data, val_targets),
-    epochs = num_epochs, batch_size = 512, verbose = 2#, class_weights = percentage
+    epochs = num_epochs, batch_size = 2048, verbose = 2#, class_weights = percentage
   )
   acc_history <- history$metrics$val_categorical_accuracy
   all_acc_histories <- rbind(all_acc_histories, acc_history)
@@ -296,7 +298,7 @@ average_acc_history <- data.frame(
 )
 
 
-max(average_acc_history$validation_acc)
+head(max(average_acc_history$validation_acc))
 
 library(ggplot2)
 ggplot(average_acc_history, aes(x = epoch, y = validation_acc)) + geom_line()
@@ -306,11 +308,18 @@ ggplot(average_acc_history, aes(x = epoch, y = validation_acc)) + geom_smooth()
 
 # Evaluate on Testset
 eval <- evaluate(model, test_data, test_targets, verbose = 1)
-eval
+head(eval)
 
 # Save model and history, please change the name
-# write.csv(average_acc_history, "../Doc/Versuch 7 - 6 Layer Smote/Try 7.csv", row.names=FALSE)
-# save_model_hdf5(model, "../Doc/Versuch 7 - 6 Layer Smote/model 7.hfd5", overwrite = TRUE, include_optimizer = TRUE)
+# write.csv(average_acc_history, "../Doc/Versuch 8_1 - 250 Epochs/Try 8_1.csv", row.names=FALSE)
+# save_model_hdf5(model, "../Doc/Versuch 8_1 - 250 Epochs/model 8_1.hfd5", overwrite = TRUE, include_optimizer = TRUE)
+
+# Save Training, Testing and Validation Data
+# write.csv(train_data, "../Doc/Versuch 8_1 - 250 Epochs/train_data.csv", row.names=FALSE)
+# write.csv(test_data, "../Doc/Versuch 8_1 - 250 Epochs - Smote/test_data.csv", row.names=FALSE)
+# write.csv(train_targets, "../Doc/Versuch 8_1 - 250 Epochs - Smote/train_targets.csv", row.names=FALSE)
+# write.csv(test_targets, "../Doc/Versuch 8_1 - 250 Epochs - Smote/test_targets.csv", row.names=FALSE)
+
 
 # Load model
 # Use model_history as precaution
