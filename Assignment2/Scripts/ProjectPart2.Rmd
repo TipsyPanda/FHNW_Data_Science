@@ -181,7 +181,7 @@ preprocRecipe <-
   step_dummy(all_nominal(), -status,  one_hot = TRUE) %>%
   step_range(all_predictors(), -all_nominal(), min = 0, max = 1)%>%
  # step_downsample(status, over_ratio = 1) %>%
-  step_smote(status, over_ratio = 1, skip=TRUE) %>%
+ step_smote(status, over_ratio = 0.25, skip=TRUE) %>%
  # step_smotenc(status, over_ratio = 1) %>%
  #step_adasyn(status, over_ratio = 1) %>%
  #step_nearmiss(status, over_ratio = 1) %>%
@@ -206,8 +206,16 @@ testSet_processed <- preprocRecipe %>%
 ```{r}
 # summarize the class distribution
 percentage <- 100-prop.table(table(data$status)) * 100
+
+#class_counts <- table(data$status)
+class_counts <- matrix_targets %>%
+  summarize_all(funs(sum(. == 1)))
+majority_class_count <- max(class_counts)
+relative_class_counts <-  majority_class_count /class_counts
+
+
 cbind(freq=table(data$status), percentage=percentage)
-class_weights <- list("0"=1,"1"=100)
+
 
 # Turn data frame into data matrix
 matrix_data <- trainingSet_processed %>% select(-tail(names(trainingSet_processed), 8))
@@ -227,6 +235,8 @@ train_data <- data.matrix(matrix_data)
 test_data <- data.matrix(matrix_data_test)
 train_targets <- data.matrix(matrix_targets)
 test_targets <- data.matrix(matrix_targets_test)
+
+
 
 # Function to build the model
 build_model <- function() {
@@ -250,6 +260,51 @@ build_model <- function() {
 
 }
 ```
+
+```{r}
+#Yannick
+model <- keras_model_sequential()
+model %>% 
+         layer_dense(units = 64, activation = 'relu', dim(train_data)[[2]]) %>% 
+         layer_dropout(rate = 0.2) %>% 
+         # layer_dense(units = 30, activation = 'relu') %>% 
+         # layer_dropout(rate = 0.3) %>%    
+         layer_dense(units = 20, activation = 'relu') %>% 
+         layer_dropout(rate = 0.2) %>%  
+         layer_dense(units = 8, activation = 'softmax')
+summary(model)
+model %>% 
+         compile(loss = 'categorical_crossentropy',
+                 optimizer = 'adam',
+                 metrics = 'accuracy')
+history <- model %>% 
+         fit(train_data,
+             train_targets,
+             epochs = 500,
+             batch_size = 64,
+             validation_split = 0.2,
+             verbose =2,
+             class_weight = list(relative_class_counts))
+plot(history)
+model %>% 
+         evaluate(test_data, test_targets)
+pred <- model %>% 
+         predict(test_data)
+pred <- apply(pred, MARGIN = 2, which.max)
+dim(keras_predict(mod, test_data))
+pred <- model %>% predict(test_data, batch_size = 32)
+y_pred = round(pred)
+# Confusion matrix
+library(caret)
+confusion_matrix <- caret::confusionMatrix(matrix(pred), matrix(test_targets))
+length(test_targets)
+table(Predicted = round(pred), Actual = test_targets)
+
+```
+
+
+
+
 ## K-Fold-Validation
 ```{r}
 

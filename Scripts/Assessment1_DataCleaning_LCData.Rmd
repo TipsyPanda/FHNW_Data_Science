@@ -3,10 +3,10 @@ title: "Data Cleaning LCdata"
 author: "Group1"
 date: "2022-12-29"
 output:
-  html_document: 
+  pdf_document: 
     toc: true
     toc_depth: 3
-  pdf_document: 
+  html_document: 
     toc: true
     toc_depth: 3
 editor_options: 
