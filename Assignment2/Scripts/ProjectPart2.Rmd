@@ -366,14 +366,14 @@ eval <- evaluate(model, test_data, test_targets, verbose = 1)
 head(eval)
 
 # Save model and history, please change the name
-# write.csv(average_acc_history, "../Doc/Versuch 8_1 - 250 Epochs/Try 8_1.csv", row.names=FALSE)
-# save_model_hdf5(model, "../Doc/Versuch 8_1 - 250 Epochs/model 8_1.hfd5", overwrite = TRUE, include_optimizer = TRUE)
+# write.csv(average_acc_history, "../Doc/Versuch 9 - 8 Layer - 1 256 - Smote/Try 9.csv", row.names=FALSE)
+# save_model_hdf5(model, "../Doc/Versuch 9 - 8 Layer - 1 256 - Smote/model 9.hfd5", overwrite = TRUE, include_optimizer = TRUE)
 
 # Save Training, Testing and Validation Data
-# write.csv(train_data, "../Doc/Versuch 8_1 - 250 Epochs/train_data.csv", row.names=FALSE)
-# write.csv(test_data, "../Doc/Versuch 8_1 - 250 Epochs - Smote/test_data.csv", row.names=FALSE)
-# write.csv(train_targets, "../Doc/Versuch 8_1 - 250 Epochs - Smote/train_targets.csv", row.names=FALSE)
-# write.csv(test_targets, "../Doc/Versuch 8_1 - 250 Epochs - Smote/test_targets.csv", row.names=FALSE)
+# write.csv(train_data, "../Doc/Versuch 9 - 8 Layer - 1 256 - Smote/train_data.csv", row.names=FALSE)
+# write.csv(test_data, "../Doc/Versuch 9 - 8 Layer - 1 256 - Smote/test_data.csv", row.names=FALSE)
+# write.csv(train_targets, "../Doc/Versuch 9 - 8 Layer - 1 256 - Smote/train_targets.csv", row.names=FALSE)
+# write.csv(test_targets, "../Doc/Versuch 9 - 8 Layer - 1 256 - Smote/test_targets.csv", row.names=FALSE)
 
 
 # Load model

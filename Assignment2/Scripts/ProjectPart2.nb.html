@@ -2138,6 +2138,7 @@ build_model &lt;- function() {
     layer_dense(units = 64, activation = &quot;relu&quot;) %&gt;%
     #layer_dropout(0.3) %&gt;%
     layer_dense(units = 128, activation = &quot;relu&quot;) %&gt;%
+    layer_dense(units = 256, activation = &quot;relu&quot;) %&gt;%
     layer_dense(units = 128, activation = &quot;relu&quot;) %&gt;%
     layer_dense(units = 64, activation = &quot;relu&quot;) %&gt;%
     layer_dense(units = 64, activation = &quot;relu&quot;) %&gt;%
@@ -2176,7 +2177,7 @@ k &lt;- 10
 indices &lt;- sample(1:nrow(train_data))
 folds &lt;- cut(indices, breaks = k, labels = FALSE)
 
-num_epochs &lt;- 250
+num_epochs &lt;- 1500
 all_acc_histories &lt;- NULL
 for (i in 1:k) {
   cat(&quot;processing fold #&quot;, i, &quot;\n&quot;)
@@ -2241,10 +2242,6 @@ eval
 # model_history &lt;- load_model_hdf5(&quot;../Doc/Versuch 6/model 6.hfd5&quot;, custom_objects = NULL, compile = TRUE)
 </code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gZmlsZShmaWxlLCBpZmVsc2UoYXBwZW5kLCBcImFcIiwgXCJ3XCIpKSA6IFxuICBjYW5ub3Qgb3BlbiB0aGUgY29ubmVjdGlvblxuIn0= -->
-<pre><code>Error in file(file, ifelse(append, &quot;a&quot;, &quot;w&quot;)) : 
-  cannot open the connection</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 </div>
 </div>
