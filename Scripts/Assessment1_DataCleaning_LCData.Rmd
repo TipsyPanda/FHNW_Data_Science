@@ -312,7 +312,9 @@ ggplot(data = cleaning, mapping = aes(x=int_rate,y=tot_coll_amt))+geom_point(alp
 ggplot(data = cleaning, mapping = aes(x=int_rate,y=tot_coll_amt))+geom_boxplot()
 ```
 
-### Cleaning of tot_cur_bal Outliers here as well
+### Cleaning of tot_cur_bal 
+
+Outliers here as well
 
 ```{r}
 #Plotting uncleaned tot_cur_bal
@@ -361,8 +363,9 @@ cleaning <- cleaning %>%                                                mutate(
 
 ```
 
-# Changing characters to factors In data cleaning, it is often necessary
+## Changing characters to factors 
 
+In data cleaning, it is often necessary
 to convert variables that contain characters into a "factor" data type.
 Factors are a special data type in R that are used to represent
 categorical variables, which are variables that can take on a limited
@@ -490,9 +493,9 @@ ggplot(data = cleaning, mapping = aes(x=int_rate,y=year_group))+geom_boxplot()
  
 ```
 
-## Cleaning of plicy code There is only policy code 1, therefore delete
+## Cleaning of plicy code 
 
-the column
+There is only policy code 1, therefore delete the column
 
 ```{r}
 ggplot(data = cleaning, mapping = aes(x=int_rate,y=policy_code))+geom_boxplot()
@@ -500,10 +503,10 @@ cleaning <- cleaning %>% select(-policy_code)
 
 ```
 
-## Cleaning of home_ownership During the data cleaning process, we
+## Cleaning of home_ownership
 
-observed that the "home_ownership" variable does not appear to exhibit a
-clear correlation with interest rates. Specifically, the categories
+During the data cleaning process, we observed that the "home_ownership" variable
+does not appear to exhibit a clear correlation with interest rates. Specifically, the categories
 "ANY" and "OTHER" contain 2 and 154 cases, respectively, while the
 category "NONE" contains 39 cases. While the "NONE" category appears to
 have a higher interest rate than the other categories, the small sample
@@ -525,8 +528,9 @@ cleaning <- cleaning %>% filter(home_ownership %in% c("MORTGAGE","OWN","RENT") )
 cleaning$home_ownership <- as.factor(cleaning$home_ownership)
 ```
 
-## Delete column zip code "The"character" column contains an excessive
+## Delete column zip code 
 
+"The"character" column contains an excessive
 number of unique values, making it difficult to accurately categorize
 the data. As a result, it is advisable to remove this column from the
 dataset to avoid introducing unnecessary complexity into the analysis."
@@ -565,8 +569,9 @@ cleaning <- cleaning %>% mutate(
    cleaning$region <- as.factor(cleaning$region)
 ```
 
-## Cleaning of earliest_cr_line Last but not least just deleting
+## Cleaning of earliest_cr_line 
 
+Last but not least just deleting 
 earliest_cr_line because that information is already covered through
 colums like inquieries, employed since and so on.
 
@@ -589,8 +594,9 @@ impact on the interest. Therefore we delete this column.
 cleaning <- cleaning %>% select(-emp_length)
 ```
 
-## Inspecting purpose Checking if other in purpose is really just other
+## Inspecting purpose 
 
+Checking if other in purpose is really just other
 or n/a. It is other! and the whole purpose is important for the
 interest, seen when plotting it.
 
