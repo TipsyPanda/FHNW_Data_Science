@@ -1,9 +1,12 @@
 ---
 title: "Project Part 2"
-output: 
-  html_notebook: 
+output:
+  html_document:
+    df_print: paged
+  html_notebook:
     theme: cerulean
     highlight: textmate
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -97,8 +100,8 @@ after learning more than 1000 epochs.
 
 ## Data import
 ```{r}
-#install.packages("tidymodels")
-#install.packages("themis")
+# install.packages("tidymodels")
+# install.packages("themis")
 library(here)
 library(tidyverse)
 library(ggplot2)
@@ -180,11 +183,12 @@ preprocRecipe <-
   recipe(status ~., data = data) %>%
   step_dummy(all_nominal(), -status,  one_hot = TRUE) %>%
   step_range(all_predictors(), -all_nominal(), min = 0, max = 1)%>%
- # step_downsample(status, over_ratio = 1) %>%
- step_smote(status, over_ratio = 0.25, skip=TRUE) %>%
+  step_smote(status, over_ratio = 1) %>%
+ # step_downsample(status, under_ratio = 1, skip=TRUE) %>%
+ # step_smote(status, over_ratio = 1, skip=TRUE) %>%
  # step_smotenc(status, over_ratio = 1) %>%
- #step_adasyn(status, over_ratio = 1) %>%
- #step_nearmiss(status, over_ratio = 1) %>%
+ # step_adasyn(status, over_ratio = 1) %>%
+ # step_nearmiss(status, over_ratio = 1) %>%
    
   step_dummy(status,  one_hot = TRUE)# %>%
 ```
@@ -204,6 +208,23 @@ testSet_processed <- preprocRecipe %>%
 
 ## Check data
 ```{r}
+
+# sum(trainingSet_processed$status_X0 == 1)
+# sum(trainingSet_processed$status_X1 == 1)
+# sum(trainingSet_processed$status_X2 == 1)
+# sum(trainingSet_processed$status_X3 == 1)
+# sum(trainingSet_processed$status_X4 == 1)
+# sum(trainingSet_processed$status_X5 == 1)
+# sum(trainingSet_processed$status_X6 == 1)
+# sum(trainingSet_processed$status_X7 == 1)
+
+# Turn data frame into data matrix
+matrix_data <- trainingSet_processed %>% select(-tail(names(trainingSet_processed), 8))
+matrix_targets <- trainingSet_processed %>% select(tail(names(trainingSet_processed), 8))
+
+matrix_data_test  <- testSet_processed %>% select(-tail(names(testSet_processed), 8))
+matrix_targets_test  <- testSet_processed %>% select(tail(names(testSet_processed), 8))
+
 # summarize the class distribution
 percentage <- 100-prop.table(table(data$status)) * 100
 
@@ -213,16 +234,8 @@ class_counts <- matrix_targets %>%
 majority_class_count <- max(class_counts)
 relative_class_counts <-  majority_class_count /class_counts
 
-
 cbind(freq=table(data$status), percentage=percentage)
 
-
-# Turn data frame into data matrix
-matrix_data <- trainingSet_processed %>% select(-tail(names(trainingSet_processed), 8))
-matrix_targets <- trainingSet_processed %>% select(tail(names(trainingSet_processed), 8))
-
-matrix_data_test  <- testSet_processed %>% select(-tail(names(testSet_processed), 8))
-matrix_targets_test  <- testSet_processed %>% select(tail(names(testSet_processed), 8))
 
 #Subset only 100 entries for testing
 #matrix_data <- matrix_data[1:100, ]
@@ -242,18 +255,19 @@ test_targets <- data.matrix(matrix_targets_test)
 build_model <- function() {
   model <- keras_model_sequential() %>%
     #layer_batch_normalization(axis = -1L, input_shape = dim(train_data)[[2]]) %>%
-    layer_dense(units = 64, activation = "relu", input_shape = dim(train_data)[[2]]) %>%
-    layer_dense(units = 64, activation = "relu") %>%
+    layer_dense(units = 128, activation = "relu", input_shape = dim(train_data)[[2]]) %>%
+    #layer_dense(units = 1024, activation = "relu") %>%
+    layer_dense(units = 2048, activation = "relu") %>%
+    layer_dropout(0.3) %>%
+    layer_dense(units = 2048, activation = "relu") %>%
+    layer_dropout(0.3) %>%
+    layer_dense(units = 128, activation = "relu") %>%
     #layer_dropout(0.3) %>%
-    layer_dense(units = 128, activation = "relu") %>%
-    layer_dense(units = 256, activation = "relu") %>%
-    layer_dense(units = 128, activation = "relu") %>%
-    layer_dense(units = 64, activation = "relu") %>%
-    layer_dense(units = 64, activation = "relu") %>%
     layer_dense(units = 8, activation = "softmax") 
 
   model %>% compile(
-    optimizer = optimizer_sgd(learning_rate = 0.2),
+    optimizer = optimizer_sgd(learning_rate = 0.02),
+    #optimizer = optimizer_adam(),
     loss = "categorical_crossentropy",
     metrics = "categorical_accuracy"
   )
@@ -263,42 +277,40 @@ build_model <- function() {
 
 ```{r}
 #Yannick
-model <- keras_model_sequential()
-model %>% 
-         layer_dense(units = 64, activation = 'relu', dim(train_data)[[2]]) %>% 
-         layer_dropout(rate = 0.2) %>% 
-         # layer_dense(units = 30, activation = 'relu') %>% 
-         # layer_dropout(rate = 0.3) %>%    
-         layer_dense(units = 20, activation = 'relu') %>% 
-         layer_dropout(rate = 0.2) %>%  
-         layer_dense(units = 8, activation = 'softmax')
-summary(model)
-model %>% 
-         compile(loss = 'categorical_crossentropy',
-                 optimizer = 'adam',
-                 metrics = 'accuracy')
-history <- model %>% 
-         fit(train_data,
-             train_targets,
-             epochs = 500,
-             batch_size = 64,
-             validation_split = 0.2,
-             verbose =2,
-             class_weight = list(relative_class_counts))
-plot(history)
-model %>% 
-         evaluate(test_data, test_targets)
-pred <- model %>% 
-         predict(test_data)
-pred <- apply(pred, MARGIN = 2, which.max)
-dim(keras_predict(mod, test_data))
-pred <- model %>% predict(test_data, batch_size = 32)
-y_pred = round(pred)
-# Confusion matrix
-library(caret)
-confusion_matrix <- caret::confusionMatrix(matrix(pred), matrix(test_targets))
-length(test_targets)
-table(Predicted = round(pred), Actual = test_targets)
+#install.packages("kerasR")
+# library(kerasR)
+# model <- keras_model_sequential()
+# model %>%
+#          layer_dense(units = 64, activation = 'relu', dim(train_data)[[2]]) %>%
+#          layer_dropout(rate = 0.2) %>%
+#          # layer_dense(units = 30, activation = 'relu') %>%
+#          # layer_dropout(rate = 0.3) %>%
+#          layer_dense(units = 20, activation = 'relu') %>%
+#          layer_dropout(rate = 0.2) %>%
+#          layer_dense(units = 8, activation = 'softmax')
+# summary(model)
+# model %>%
+#          compile(loss = 'categorical_crossentropy',
+#                  optimizer = 'adam',
+#                  metrics = 'accuracy')
+# history <- model %>%
+#          fit(train_data,
+#              train_targets,
+#              epochs = 1500,
+#              batch_size = 1024,
+#              validation_split = 0.2,
+#              verbose =2,
+#              class_weight = list(relative_class_counts))
+# plot(history)
+# model %>%
+#          evaluate(test_data, test_targets)
+# pred <- model %>% predict(test_data, batch_size = 32)
+# y_pred = round(pred)
+# # Confusion matrix
+# library(caret)
+# confusion_matrix <- caret::confusionMatrix(matrix(pred), matrix(test_targets))
+# length(test_targets)
+# table(Predicted = round(pred), Actual = test_targets)
 
 ```
 
@@ -308,7 +320,7 @@ table(Predicted = round(pred), Actual = test_targets)
 ## K-Fold-Validation
 ```{r}
 
-k <- 10
+k <- 2
 indices <- sample(1:nrow(train_data))
 folds <- cut(indices, breaks = k, labels = FALSE)
 
@@ -320,7 +332,7 @@ for (i in 1:k) {
   val_indices <- which(folds == i, arr.ind = TRUE)
   val_data <- train_data[val_indices,] #test_data#
   val_targets <- train_targets[val_indices,] #test_targets#
-  
+
   partial_train_data <- train_data[-val_indices,]
   partial_train_targets <- train_targets[-val_indices,]
   model <- build_model()
@@ -334,10 +346,12 @@ for (i in 1:k) {
   history <- model %>% fit(
     partial_train_data, partial_train_targets,
     validation_data = list(val_data, val_targets),
-    epochs = num_epochs, batch_size = 2048, verbose = 2#, class_weights = percentage
+    epochs = num_epochs, batch_size = 8192, verbose = 2#, class_weights = percentage
   )
   acc_history <- history$metrics$val_categorical_accuracy
   all_acc_histories <- rbind(all_acc_histories, acc_history)
+  train_history <- history$metrics$categorical_accuracy
+  all_train_histories <- rbind(all_train_histories, train_history)
 }
 
 
@@ -349,9 +363,9 @@ for (i in 1:k) {
 ```{r}
 average_acc_history <- data.frame(
   epoch = seq(1:ncol(all_acc_histories)),
-  validation_acc = apply(all_acc_histories, 2, mean)
+  validation_acc = apply(all_acc_histories, 2, mean),
+  training_acc = apply(all_acc_histories, 1, mean)
 )
-
 
 head(max(average_acc_history$validation_acc))
 
@@ -365,15 +379,15 @@ ggplot(average_acc_history, aes(x = epoch, y = validation_acc)) + geom_smooth()
 eval <- evaluate(model, test_data, test_targets, verbose = 1)
 head(eval)
 
-# Save model and history, please change the name
-# write.csv(average_acc_history, "../Doc/Versuch 9 - 8 Layer - 1 256 - Smote/Try 9.csv", row.names=FALSE)
-# save_model_hdf5(model, "../Doc/Versuch 9 - 8 Layer - 1 256 - Smote/model 9.hfd5", overwrite = TRUE, include_optimizer = TRUE)
-
-# Save Training, Testing and Validation Data
-# write.csv(train_data, "../Doc/Versuch 9 - 8 Layer - 1 256 - Smote/train_data.csv", row.names=FALSE)
-# write.csv(test_data, "../Doc/Versuch 9 - 8 Layer - 1 256 - Smote/test_data.csv", row.names=FALSE)
-# write.csv(train_targets, "../Doc/Versuch 9 - 8 Layer - 1 256 - Smote/train_targets.csv", row.names=FALSE)
-# write.csv(test_targets, "../Doc/Versuch 9 - 8 Layer - 1 256 - Smote/test_targets.csv", row.names=FALSE)
+# # Save model and history, please change the name
+#  write.csv(average_acc_history, "../Doc/Versuch 17 - 4 Layer - 512,256,32,8 Full Oversampling SGD 2500 Epochs/Try 17.csv", row.names=FALSE)
+#  save_model_hdf5(model, "../Doc/Versuch 17 - 4 Layer - 512,256,32,8 Full Oversampling SGD 2500 Epochs/model 17.hfd5", overwrite = TRUE, include_optimizer = TRUE)
+# 
+# # Save Training, Testing and Validation Data
+#  write.csv(train_data, "../Doc/Versuch 17 - 4 Layer - 512,256,32,8 Full Oversampling SGD 2500 Epochs/train_data.csv", row.names=FALSE)
+#  write.csv(test_data, "../Doc/Versuch 17 - 4 Layer - 512,256,32,8 Full Oversampling SGD 2500 Epochs/test_data.csv", row.names=FALSE)
+#  write.csv(train_targets, "../Doc/Versuch 17 - 4 Layer - 512,256,32,8 Full Oversampling SGD 2500 Epochs/train_targets.csv", row.names=FALSE)
+#  write.csv(test_targets, "../Doc/Versuch 17 - 4 Layer - 512,256,32,8 Full Oversampling SGD 2500 Epochs/test_targets.csv", row.names=FALSE)
 
 
 # Load model
