@@ -1,0 +1,131 @@
+---
+title: "Reality check"
+author: "Group 1"
+date: "2023-01-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Reality check
+
+This is the notebook for the reality check.
+
+```{r}
+library(here)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(tensorflow)
+library(tfdatasets)
+library(tidymodels)
+library(keras)
+library(caret)
+library(themis)
+
+setwd(getwd())
+
+# Load model
+modelIn = "../Hand in/Group 1 model.hfd5"
+model_Group1 <- load_model_hdf5(modelIn, custom_objects = NULL, compile = TRUE)
+
+#LOAD DATA
+#dataIn = "../Hand in/Dataset-part-2.csv"
+dataIn = "./../../Data/Evaluation-Dataset-part-2.csv"
+
+data_in <- read.csv(dataIn,header = TRUE, sep =',')
+#View(data_in)
+data <- data.frame(data_in)
+```
+\newpage
+# Initial data cleaning
+```{r}
+# Check for duplicates 
+sum(duplicated(data))
+# No duplicates found 
+
+#Remove ID (irrelevant for predction) and FLAG_MOBIL (always 1)
+data <- data %>% select(-ID, -FLAG_MOBIL)
+
+# Remove students as there are only 4 and it will result in 
+# problems with One-Hot-Encoding in later stage
+data <- filter(data, NAME_INCOME_TYPE != "Student")
+
+# Factor variables 
+cols <- c("CODE_GENDER","FLAG_OWN_CAR","FLAG_OWN_REALTY","NAME_INCOME_TYPE","NAME_EDUCATION_TYPE", "NAME_FAMILY_STATUS", "NAME_HOUSING_TYPE","FLAG_WORK_PHONE","FLAG_PHONE","FLAG_EMAIL", "OCCUPATION_TYPE","status")
+data[cols] <- lapply(data[cols],factor)
+
+# Replacing empty values with "Unknown" in Occupation_Type
+levels(data$OCCUPATION_TYPE) <- c(levels(data$OCCUPATION_TYPE), "Unknown")
+data$OCCUPATION_TYPE[is.na(data$OCCUPATION_TYPE)] <- "Unknown"
+
+# Replacing C and X in Status with numeric values
+levels(data$status)[levels(data$status)=="C"] <- "6"
+#data$status[data$status == "X"] <- 7
+levels(data$status)[levels(data$status)=="X"] <- "7"
+
+set.seed(1)
+# Shuffle data
+data <- data[sample(1:nrow(data)), ]
+# Split the data into train and test 
+# prop = 0.8 will result in 80/20 split
+# strata = status will use stratification on variable status 
+trainIndex <- initial_split(data, prop = 0.8, strata = status) 
+trainingSet <- training(trainIndex)
+testSet <- testing(trainIndex)
+#Overwrite trainingSet with whole dataset
+trainingSet <- data
+```
+# Remove outliers
+We identified outliers on CNT_CHILDREN and AMT_INCOME_TOTAL, so we remove them, if they are farther away than 1.5 the interquartile range.
+```{r}
+# CNT_CHILDREN
+Q1_Child <- quantile(trainingSet$CNT_CHILDREN, .25)
+Q3_Child <- quantile(trainingSet$CNT_CHILDREN, .75)
+IQR_Child <- IQR(trainingSet$CNT_CHILDREN)
+# Now we keep the values within 1.5*IQR of Q1 and Q3
+trainingSet <- subset(trainingSet, trainingSet$CNT_CHILDREN > (Q1_Child - 1.5*IQR_Child) & trainingSet$CNT_CHILDREN < (Q3_Child + 1.5*IQR_Child))
+
+# AMT_INCOME_TOTAL
+Q1_AIT <- quantile(trainingSet$AMT_INCOME_TOTAL, .25)
+Q3_AIT <- quantile(trainingSet$AMT_INCOME_TOTAL, .75)
+IQR_AIT <- IQR(trainingSet$AMT_INCOME_TOTAL)
+# Now we keep the values within 1.5*IQR of Q1 and Q3
+trainingSet <- subset(trainingSet, trainingSet$AMT_INCOME_TOTAL > (Q1_AIT - 1.5*IQR_AIT) & trainingSet$AMT_INCOME_TOTAL < (Q3_AIT + 1.5*IQR_AIT))
+
+set.seed(1)
+preprocRecipe <-
+  recipe(status ~., data = data) %>%
+  step_dummy(all_nominal(), -status,  one_hot = TRUE) %>%
+  step_range(all_predictors(), -all_nominal(), min = 0, max = 1) %>%
+ # step_smote(status, over_ratio = 1) %>%
+ # step_downsample(status, under_ratio = 1, skip=TRUE) %>%
+ # step_smote(status, over_ratio = 1, skip=TRUE) %>%
+  step_dummy(status, one_hot = TRUE)# %>%
+
+# retain = TRUE and new_data = NULL ensures that pre-processed trainingSet is 
+# returned 
+trainingSet_processed <- preprocRecipe %>%
+  prep(trainingSet, retain = TRUE) %>%
+  bake(new_data = NULL)
+testSet_processed <- preprocRecipe %>%
+  prep(testSet) %>%
+  bake(new_data =testSet)
+
+# Turn data frame into data matrix to feed it into NN
+matrix_data <- trainingSet_processed %>% select(-tail(names(trainingSet_processed), 8))
+matrix_targets <- trainingSet_processed %>% select(tail(names(trainingSet_processed), 8))
+train_data <- data.matrix(matrix_data)
+train_targets <- data.matrix(matrix_targets)
+```
+# Evaluation
+We can then compute the average of the per-epoch ACC scores for all folds.  
+Check on the data history for all k. We take the mean to estimate the best amount of epochs.
+```{r}
+
+# Evaluate on Testset
+eval <- evaluate(model_Group1, train_data, train_targets, verbose = 1)
+head(eval)
+```
